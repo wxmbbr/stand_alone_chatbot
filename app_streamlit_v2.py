@@ -17,8 +17,22 @@ st.set_page_config(
     layout="wide"
 )
 
-# Import config values directly - avoid importing OpenAI client
-from config import OPENAI_API_KEY, ASSISTANT_ID
+# Import config values with environment variable fallback for deployment
+try:
+    from config import OPENAI_API_KEY, ASSISTANT_ID
+except ImportError:
+    # Fallback to environment variables for deployment
+    OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+    ASSISTANT_ID = os.getenv('OPENAI_ASSISTANT_ID')
+    
+    # Check if environment variables are set
+    if not OPENAI_API_KEY:
+        st.error("❌ OPENAI_API_KEY environment variable is not set. Please configure it in your Render.com service settings.")
+        st.stop()
+    
+    if not ASSISTANT_ID:
+        st.error("❌ OPENAI_ASSISTANT_ID environment variable is not set. Please configure it in your Render.com service settings.")
+        st.stop()
 
 # Define BBR colors
 BBR_BLUE = "#003876"

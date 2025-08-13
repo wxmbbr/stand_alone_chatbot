@@ -1,0 +1,28 @@
+RENDER.COM ENVIRONMENT VARIABLES
+Copy and paste these into your Render.com service settings:
+
+REQUIRED VARIABLES (Replace with your actual values):
+OPENAI_API_KEY=your_actual_openai_api_key_here
+OPENAI_ASSISTANT_ID=your_actual_assistant_id_here
+
+OPTIONAL STREAMLIT CONFIGURATION:
+STREAMLIT_SERVER_PORT=10000
+STREAMLIT_SERVER_ADDRESS=0.0.0.0
+STREAMLIT_SERVER_HEADLESS=true
+STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+STREAMLIT_SERVER_ENABLE_CORS=false
+STREAMLIT_SERVER_ENABLE_XSRF_PROTECTION=false
+
+PYTHON VERSION:
+PYTHON_VERSION=3.11.0
+
+INSTRUCTIONS:
+1. Go to your Render.com service dashboard
+2. Click on "Environment" tab
+3. Add each variable as Key-Value pairs:
+   - Key: OPENAI_API_KEY
+   - Value: [paste your actual API key]
+   - Key: OPENAI_ASSISTANT_ID  
+   - Value: [paste your actual Assistant ID]
+4. Add the other optional variables if needed
+5. Click "Save Changes"
