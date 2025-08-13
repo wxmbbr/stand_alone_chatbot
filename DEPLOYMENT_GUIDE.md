@@ -42,7 +42,7 @@ When deploying to Render.com, you need to set the following environment variable
 - **Branch**: `main`
 - **Root Directory**: Leave empty (uses root)
 - **Build Command**: `pip install -r requirements.txt`
-- **Start Command**: `streamlit run app_streamlit_v2.py --server.port=$PORT --server.address=0.0.0.0`
+- **Start Command**: `streamlit run app_streamlit_render.py --server.port=$PORT --server.address=0.0.0.0`
 
 ### 3. Set Environment Variables
 In the "Environment" section, add all the variables from the table above with your actual values.
