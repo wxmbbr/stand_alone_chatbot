@@ -77,6 +77,16 @@
             background-position: center;
             position: relative;
         }
+        
+        /* Dynamic background for production */
+        .hero.production-bg {
+            background-image: var(--hero-bg-image);
+        }
+        
+        /* Fallback for when local image fails */
+        .hero.no-local-bg {
+            background: linear-gradient(135deg, #003876 0%, #004c9e 50%, #0066cc 100%);
+        }
 
         .hero-overlay {
             position: absolute;
@@ -392,7 +402,7 @@
         </div>
         <!-- FIXED: Enable full scrolling capability -->
         <iframe id="chat-frame" 
-                src="http://localhost:8501" 
+                src="" 
                 frameborder="0" 
                 scrolling="yes"
                 allow="microphone; camera"
@@ -401,6 +411,71 @@
     </div>
 
     <script>
+        // Detect environment and set appropriate iframe src
+        function getStreamlitUrl() {
+            // Check if running locally
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                return 'http://localhost:8501';
+            } else {
+                return 'https://chatbot-frame-for-homepage.onrender.com';
+            }
+        }
+
+        // Set iframe source based on environment
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatFrame = document.getElementById('chat-frame');
+            chatFrame.src = getStreamlitUrl();
+            
+            // Check if background image loads, otherwise use fallback
+            checkBackgroundImage();
+        });
+
+        // Check if background image loads successfully
+        function checkBackgroundImage() {
+            const heroSection = document.querySelector('.hero');
+            const testImg = new Image();
+            
+            testImg.onload = function() {
+                console.log('Local background image loaded successfully');
+            };
+            
+            testImg.onerror = function() {
+                console.log('Local background image failed to load, using fallback');
+                heroSection.classList.add('no-local-bg');
+                
+                // Try to get background from Streamlit iframe
+                setTimeout(() => {
+                    tryGetBackgroundFromIframe();
+                }, 2000);
+            };
+            
+            testImg.src = 'images/web_background.png';
+        }
+
+        // Try to get background from Streamlit iframe
+        function tryGetBackgroundFromIframe() {
+            try {
+                const chatFrame = document.getElementById('chat-frame');
+                const iframeDoc = chatFrame.contentDocument || chatFrame.contentWindow.document;
+                
+                if (iframeDoc) {
+                    const backgroundData = iframeDoc.querySelector('#background-data');
+                    if (backgroundData) {
+                        const bgImage = backgroundData.getAttribute('data-background');
+                        if (bgImage) {
+                            const heroSection = document.querySelector('.hero');
+                            heroSection.style.setProperty('--hero-bg-image', `url(${bgImage})`);
+                            heroSection.classList.remove('no-local-bg');
+                            heroSection.classList.add('production-bg');
+                            console.log('Applied background from Streamlit iframe');
+                        }
+                    }
+                }
+            } catch (e) {
+                console.log('Cannot access iframe content due to CORS:', e);
+            }
+        }
+
         // Enhanced chat widget functionality with FORCED SCROLLING
         const chatToggle = document.getElementById('chat-toggle');
         const chatWidget = document.getElementById('chat-widget');
@@ -475,6 +550,21 @@
                                 container.style.height = 'auto';
                                 container.style.maxHeight = '500px';
                             });
+                            
+                            // Get background image from Streamlit iframe
+                            const backgroundData = iframeDoc.querySelector('#background-data');
+                            if (backgroundData) {
+                                const bgImage = backgroundData.getAttribute('data-background');
+                                if (bgImage) {
+                                    // Apply background to hero section
+                                    const heroSection = document.querySelector('.hero');
+                                    if (heroSection) {
+                                        heroSection.style.setProperty('--hero-bg-image', `url(${bgImage})`);
+                                        heroSection.classList.add('production-bg');
+                                        console.log('Applied production background image');
+                                    }
+                                }
+                            }
                             
                             console.log('Forced scrolling on Streamlit content');
                         }

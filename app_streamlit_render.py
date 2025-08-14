@@ -9,6 +9,7 @@ import json
 import requests
 import base64
 from datetime import datetime
+from urllib.parse import urlparse, parse_qs
 
 # Page config must be the first Streamlit command
 st.set_page_config(
@@ -16,6 +17,22 @@ st.set_page_config(
     page_icon="🏗️",
     layout="wide"
 )
+
+# Check if this is a request for static assets
+query_params = st.query_params
+if "asset" in query_params:
+    asset_name = query_params["asset"]
+    if asset_name == "web_background.png":
+        bg_path = "images/web_background.png"
+        if os.path.exists(bg_path):
+            with open(bg_path, "rb") as f:
+                st.download_button(
+                    label="Download Background",
+                    data=f.read(),
+                    file_name="web_background.png",
+                    mime="image/png"
+                )
+        st.stop()
 
 # Import config values with environment variable fallback for deployment
 try:
@@ -61,6 +78,7 @@ def get_image_base64_safe(image_path):
 bbr_logo_path = "images/BBR_Logo.png"
 ebbr_logo_path = "images/EBBR_logo.png"
 user_avatar_path = "images/user.png"
+web_background_path = "images/web_background.png"
 
 # Check if images directory exists
 images_exist = os.path.exists("images/")
@@ -68,10 +86,12 @@ st.info(f"📁 Images directory exists: {images_exist}")
 
 if images_exist:
     bbr_logo_base64 = get_image_base64_safe(bbr_logo_path)
+    web_background_base64 = get_image_base64_safe(web_background_path)
     assistant_avatar = ebbr_logo_path if os.path.exists(ebbr_logo_path) else None
     user_avatar = user_avatar_path if os.path.exists(user_avatar_path) else None
 else:
     bbr_logo_base64 = None
+    web_background_base64 = None
     assistant_avatar = None
     user_avatar = None
     st.warning("📁 Images directory not found - running without images")
@@ -314,6 +334,12 @@ if prompt := st.chat_input("Ask me about construction, engineering, or BBR servi
             else:
                 st.error("❌ Failed to send message")
 
+# Serve background image as base64 for iframe integration
+if web_background_base64:
+    st.markdown(f"""
+    <div id="background-data" style="display: none;" data-background="data:image/png;base64,{web_background_base64}"></div>
+    """, unsafe_allow_html=True)
+
 # Footer
 st.markdown("---")
 st.markdown(f"""
@@ -332,3 +358,4 @@ if os.getenv('RENDER') != 'true':  # Only show locally, not on Render
         st.write(f"Assistant avatar: {assistant_avatar}")
         st.write(f"User avatar: {user_avatar}")
         st.write(f"Environment: {'Render.com' if os.getenv('RENDER') else 'Local'}")
+
