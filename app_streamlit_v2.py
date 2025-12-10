@@ -594,11 +594,10 @@ def process_user_message(prompt: str):
 # Initialize session state defaults
 if "messages" not in st.session_state:
     st.session_state.messages = []
-    welcome_message = """Hello! I'm the BBR Service Assistant. I'm here to help you with information about BBR Network's technologies, applications, and services.
-
-Feel free to copy and paste this message for your inquiry related to ETAs. If you need further assistance or more specific information, please let me know!
-
-How can I assist you today?"""
+    welcome_message = """Hello! I'm the BBR Intelligence Assistant. How can I help you today? For example, ask:
+- “What’s the spec for CMG?” 
+- “Weight of CMI trumplate 1206?” 
+- “Share docs context” (upload a file in the sidebar or mobile expander)."""
     st.session_state.messages.append({"role": "assistant", "content": welcome_message})
 
 # Create fixed header
@@ -626,3 +625,7 @@ for message in st.session_state.messages:
 # Chat input
 if prompt := st.chat_input("Ask a question about BBR technologies..."):
     process_user_message(prompt)
+elif len(st.session_state.messages) == 1:
+    # Auto-start a conversation by posing a gentle opener
+    auto_prompt = "Please briefly introduce yourself and how you can help with BBR products and specs."
+    process_user_message(auto_prompt)
