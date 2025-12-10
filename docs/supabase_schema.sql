@@ -47,3 +47,4 @@ create index if not exists idx_sessions_user on public.sessions (user_id);
 -- RLS policies (examples; adjust as needed)
 -- For simplicity, allow service role to bypass RLS; implement finer policies for production.
 
+
