@@ -264,11 +264,11 @@ st.markdown(f"""
         padding: 0.75rem !important;
     }}
 
-    /* Input bar - clean single line with icons */
+    /* Input bar - clean rounded design */
     .stChatFloatingInputContainer {{
         bottom: 18px !important;
         width: 100% !important;
-        max-width: 900px !important;
+        max-width: 800px !important;
         margin: 0 auto !important;
         left: 50% !important;
         transform: translateX(-50%) !important;
@@ -286,7 +286,7 @@ st.markdown(f"""
     .stChatInputContainer input {{
         border-radius: 20px !important;
         border: none !important;
-        padding: 0.75rem 3rem 0.75rem 2.8rem !important;
+        padding: 0.75rem 1rem !important;
         background: transparent !important;
         color: #374151 !important;
         font-weight: 500;
@@ -354,169 +354,26 @@ st.markdown(f"""
         margin-bottom: 6px;
     }}
 
-    /* Hide standalone quick-actions section entirely - we inject icons into input bar */
-    .quick-actions-container {{
-        display: none !important;
-    }}
-
-    /* Inject mic icon on left of input, upload icon on right */
-    .stChatFloatingInputContainer {{
-        position: relative !important;
-    }}
-
-    /* Left mic icon */
-    .input-icon-left {{
-        position: absolute;
-        left: 18px;
-        top: 50%;
-        transform: translateY(-50%);
-        z-index: 10;
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #6b7a90;
-        font-size: 18px;
-        cursor: pointer;
-        background: transparent;
-        border: none;
-        border-radius: 8px;
-    }}
-    .input-icon-left:hover {{
-        color: var(--bbr-blue);
-        background: rgba(0,56,118,0.08);
-    }}
-
-    /* Right upload icon */
-    .input-icon-right {{
-        position: absolute;
-        right: 60px;
-        top: 50%;
-        transform: translateY(-50%);
-        z-index: 10;
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #6b7a90;
-        font-size: 18px;
-        cursor: pointer;
-        background: transparent;
-        border: none;
-        border-radius: 8px;
-    }}
-    .input-icon-right:hover {{
-        color: var(--bbr-blue);
-        background: rgba(0,56,118,0.08);
-    }}
-
-    /* Adjust input padding to make room for icons */
-    .stChatInputContainer input {{
-        padding-left: 52px !important;
-        padding-right: 100px !important;
-    }}
-
-    /* Hidden file uploader overlay on upload icon */
-    .hidden-uploader {{
-        position: absolute !important;
-        right: 60px !important;
-        top: 50% !important;
-        transform: translateY(-50%) !important;
-        width: 32px !important;
-        height: 32px !important;
-        opacity: 0 !important;
-        cursor: pointer !important;
-        z-index: 11 !important;
-    }}
-    .hidden-uploader * {{
-        cursor: pointer !important;
-    }}
-    .hidden-uploader [data-testid="stFileUploaderDropzone"] {{
-        padding: 0 !important;
-        margin: 0 !important;
-        border: none !important;
-        background: transparent !important;
-        min-height: 0 !important;
-        height: 32px !important;
-        width: 32px !important;
-    }}
-    .hidden-uploader label,
-    .hidden-uploader section,
-    .hidden-uploader [data-testid="stFileUploaderUploadButton"] {{
-        display: none !important;
-    }}
-
-    /* Hidden audio recorder overlay on mic icon */
-    .hidden-audio {{
-        position: absolute !important;
-        left: 18px !important;
-        top: 50% !important;
-        transform: translateY(-50%) !important;
-        width: 32px !important;
-        height: 32px !important;
-        z-index: 11 !important;
-    }}
-    .hidden-audio > div {{
-        width: 32px !important;
-        height: 32px !important;
-    }}
-    .hidden-audio button {{
-        width: 32px !important;
-        height: 32px !important;
-        padding: 0 !important;
-        background: transparent !important;
-        border: none !important;
-        box-shadow: none !important;
-    }}
-
-    /* Hide the columns holding the invisible widgets */
-    .element-container:has(.hidden-uploader),
-    .element-container:has(.hidden-audio),
-    .stColumn:has(.hidden-uploader),
-    .stColumn:has(.hidden-audio) {{
-        position: fixed !important;
-        bottom: 24px !important;
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-        width: 900px !important;
-        max-width: 900px !important;
-        height: 48px !important;
-        z-index: 1002 !important;
-        pointer-events: none;
-        opacity: 0;
-    }}
-    .hidden-uploader,
-    .hidden-audio {{
-        pointer-events: auto !important;
-        opacity: 1 !important;
-    }}
-
-    /* File context badge */
+    /* File context badge - inline above input */
     .file-context-badge {{
-        position: fixed;
-        bottom: 80px;
-        left: 50%;
-        transform: translateX(-50%);
+        display: inline-flex;
+        align-items: center;
         background: #f0f9ff;
         border: 1px solid #bae6fd;
         color: #0369a1;
         padding: 6px 14px;
         border-radius: 20px;
         font-size: 0.85rem;
-        z-index: 1003;
-        display: flex;
-        align-items: center;
         gap: 8px;
+        margin-bottom: 8px;
     }}
-    .file-context-badge button {{
-        background: none;
-        border: none;
-        color: #0369a1;
-        cursor: pointer;
-        font-size: 1rem;
-        padding: 0 4px;
+
+    /* Hide sidebar completely */
+    section[data-testid="stSidebar"] {{
+        display: none !important;
+    }}
+    button[data-testid="stSidebarCollapsedControl"] {{
+        display: none !important;
     }}
 
     /* Mobile tweaks */
@@ -535,10 +392,10 @@ st.markdown(f"""
             font-size: 0.95rem;
         }}
         .block-container {{
-            padding: 0 10px 100px 10px !important;
+            padding: 0 10px 160px 10px !important;
         }}
         .stChatFlow {{
-            height: calc(100vh - 200px) !important;
+            height: calc(100vh - 260px) !important;
             padding: 12px !important;
         }}
         .stChatMessage {{
@@ -561,7 +418,7 @@ st.markdown(f"""
             border-radius: 24px !important;
         }}
         .stChatInputContainer input {{
-            padding: 0.65rem 2.5rem 0.65rem 2.5rem !important;
+            padding: 0.65rem 0.85rem !important;
             font-size: 0.9rem !important;
         }}
         .stChatInputContainer button {{
@@ -569,20 +426,7 @@ st.markdown(f"""
             height: 32px !important;
             min-width: 32px !important;
         }}
-        .input-icon-left {{
-            left: 14px;
-            width: 28px;
-            height: 28px;
-            font-size: 16px;
-        }}
-        .input-icon-right {{
-            right: 52px;
-            width: 28px;
-            height: 28px;
-            font-size: 16px;
-        }}
         .file-context-badge {{
-            bottom: 70px;
             font-size: 0.8rem;
             padding: 5px 12px;
         }}
@@ -799,70 +643,99 @@ def render_mobile_inputs():
 
 
 def render_inline_input_icons():
-    """Render mic and upload icons integrated into the chat input bar."""
+    """Render mic and upload icons integrated into the chat input bar - NO SIDEBAR."""
     
     # Show file context badge if a file is loaded
     if st.session_state.file_context:
         fname = st.session_state.file_context["name"]
-        st.markdown(f"""
-        <div class="file-context-badge">
-            📎 {fname}
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("✕ Clear file", key="clear_file_ctx"):
-            st.session_state.file_context = None
-            st.rerun()
+        col1, col2 = st.columns([6, 1])
+        with col1:
+            st.markdown(f"""
+            <div class="file-context-badge">
+                📎 {fname}
+            </div>
+            """, unsafe_allow_html=True)
+        with col2:
+            if st.button("✕", key="clear_file_ctx", help="Clear file"):
+                st.session_state.file_context = None
+                st.rerun()
     
-    # Inject the visible icons into the input bar via JS/CSS
+    # Compact inline controls - positioned at bottom, minimal footprint
     st.markdown("""
-    <script>
-    (function() {
-        function injectIcons() {
-            const container = document.querySelector('.stChatFloatingInputContainer');
-            if (!container) return;
-            
-            // Don't duplicate
-            if (container.querySelector('.input-icon-left')) return;
-            
-            // Mic icon (left)
-            const micIcon = document.createElement('div');
-            micIcon.className = 'input-icon-left';
-            micIcon.innerHTML = '🎤';
-            micIcon.title = 'Voice input';
-            container.appendChild(micIcon);
-            
-            // Upload icon (right)  
-            const uploadIcon = document.createElement('div');
-            uploadIcon.className = 'input-icon-right';
-            uploadIcon.innerHTML = '☁️';
-            uploadIcon.title = 'Upload file';
-            container.appendChild(uploadIcon);
+    <style>
+    /* Hide the widget container but keep it functional */
+    .inline-controls-row {
+        position: fixed;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        z-index: 1002;
+        background: rgba(255,255,255,0.95);
+        padding: 8px 16px;
+        border-radius: 24px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        border: 1px solid #e5e7eb;
+    }
+    .inline-controls-row .stFileUploader {
+        max-width: 180px;
+    }
+    .inline-controls-row [data-testid="stFileUploaderDropzone"] {
+        padding: 8px !important;
+        min-height: auto !important;
+        border-radius: 12px !important;
+    }
+    .inline-controls-row [data-testid="stFileUploaderDropzone"] section {
+        padding: 4px !important;
+    }
+    .inline-controls-row [data-testid="stFileUploaderDropzone"] small {
+        display: none !important;
+    }
+    .inline-controls-row label {
+        font-size: 0.8rem !important;
+        margin-bottom: 4px !important;
+    }
+    /* Audio recorder compact */
+    .inline-controls-row .stAudioRecorder {
+        transform: scale(0.9);
+    }
+    
+    @media (max-width: 768px) {
+        .inline-controls-row {
+            bottom: 70px;
+            padding: 6px 12px;
+            gap: 8px;
         }
-        
-        // Run on load and observe for changes
-        setTimeout(injectIcons, 500);
-        setInterval(injectIcons, 2000);
-        
-        const observer = new MutationObserver(injectIcons);
-        observer.observe(document.body, { childList: true, subtree: true });
-    })();
-    </script>
+        .inline-controls-row .stFileUploader {
+            max-width: 140px;
+        }
+    }
+    </style>
     """, unsafe_allow_html=True)
     
-    # Use sidebar for the actual widgets (hidden on mobile, accessible on desktop)
-    with st.sidebar:
-        st.markdown("### 📎 File & Voice")
+    # Create inline row with file uploader and voice recorder
+    st.markdown('<div class="inline-controls-row">', unsafe_allow_html=True)
+    
+    col1, col2 = st.columns([2, 1])
+    with col1:
         uploaded = st.file_uploader(
-            "Upload (PDF, DOCX, TXT)",
+            "📎 Attach",
             type=["pdf", "docx", "txt"],
-            key="sidebar_file",
+            key="inline_file",
+            label_visibility="collapsed",
         )
+    with col2:
         audio_bytes = audio_recorder(
-            text="🎤 Hold to record",
+            text="",
             pause_threshold=2.0,
             sample_rate=16000,
-            key="sidebar_audio",
+            key="inline_audio",
+            icon_size="1.5rem",
         )
+    
+    st.markdown('</div>', unsafe_allow_html=True)
     
     # Process uploaded file
     if uploaded:
