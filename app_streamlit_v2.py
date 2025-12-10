@@ -207,19 +207,25 @@ def persist_message(role: str, content: str):
 
 
 def render_auth_gate():
+    st.markdown("<div class='auth-card'>", unsafe_allow_html=True)
     st.markdown("### Invite-only access")
     st.caption("Enter your email and invite code to continue.")
     with st.form("auth_form"):
-        email = st.text_input("Work email")
-        token = st.text_input("Invite code / token")
+        email = st.text_input("Work email", placeholder="you@company.com")
+        token = st.text_input("Invite code / token", placeholder="Paste invite token")
         submitted = st.form_submit_button("Enter", type="primary")
     if submitted:
         with st.spinner("Validating invite..."):
             user, err = bootstrap_user(email.strip(), token.strip())
         if err:
-            st.error(err)
+            st.markdown(f"<div class='auth-error'>{err}</div>", unsafe_allow_html=True)
         else:
             st.success(f"Welcome {user['email']}!")
+    st.markdown(
+        "<div class='auth-help'>Use the invite token sent by an admin. Tokens are single-use; once you log in, your session will persist for 7 days on this device.</div>",
+        unsafe_allow_html=True,
+    )
+    st.markdown("</div>", unsafe_allow_html=True)
 
 
 def render_admin_panel():
@@ -474,6 +480,45 @@ st.markdown(f"""
     /* Badges / captions */
     .stCaption {{
         color: #5a6880 !important;
+    }}
+
+    /* Auth card */
+    .auth-card {{
+        background: rgba(255,255,255,0.9);
+        border: 1px solid #e7edf6;
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+        padding: 18px 18px 10px 18px;
+        max-width: 760px;
+        margin: 12px auto 0 auto;
+    }}
+    .auth-card h3 {{
+        margin: 0 0 6px 0;
+        font-weight: 700;
+        color: var(--bbr-blue);
+    }}
+    .auth-note {{
+        color: #5d6b82;
+        margin-bottom: 12px;
+    }}
+    .auth-help {{
+        background: #f6f8fb;
+        border: 1px solid #e3e9f3;
+        border-radius: 10px;
+        padding: 10px 12px;
+        margin-top: 8px;
+        color: #4d5a70;
+        font-size: 0.95rem;
+    }}
+    .auth-help b {{
+        color: var(--bbr-blue);
+    }}
+    .auth-error {{
+        background: rgba(255, 235, 235, 0.9);
+        border: 1px solid #f0c2c2;
+        color: #a33;
+        padding: 10px 12px;
+        border-radius: 10px;
     }}
 
     /* Mobile tweaks */
