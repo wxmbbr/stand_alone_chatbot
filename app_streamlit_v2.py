@@ -9,8 +9,13 @@ import json
 import requests
 import base64
 import secrets
+import io
 from datetime import datetime, timezone
 from typing import Optional, Dict, Any, List
+
+from audio_recorder_streamlit import audio_recorder
+from pypdf import PdfReader
+from docx import Document
 
 from supabase_client import (
     get_client as get_supabase_client,
@@ -80,12 +85,69 @@ if "session_id" not in st.session_state:
 if "messages" not in st.session_state:
     st.session_state.messages: List[Dict[str, str]] = []
 
+if "file_context" not in st.session_state:
+    st.session_state.file_context: Optional[Dict[str, str]] = None
+
+if "voice_history" not in st.session_state:
+    st.session_state.voice_history: List[str] = []
+
 # Define BBR colors
 BBR_BLUE = "#003876"
 BBR_LIGHT_BLUE = "#e8f0f9"
 BBR_GRAY = "#f8f9fa"
 BBR_TEXT = "#333333"
 
+# -------- File upload + voice helpers --------
+MAX_UPLOAD_MB = 2
+
+
+def _extract_text(uploaded_file) -> Optional[str]:
+    if uploaded_file is None:
+        return None
+    size_mb = uploaded_file.size / (1024 * 1024)
+    if size_mb > MAX_UPLOAD_MB:
+        st.error(f"File too large ({size_mb:.2f} MB). Max {MAX_UPLOAD_MB} MB.")
+        return None
+
+    name = uploaded_file.name.lower()
+    try:
+        if name.endswith(".pdf"):
+            reader = PdfReader(uploaded_file)
+            pages = [page.extract_text() or "" for page in reader.pages]
+            return "\n".join(pages)
+        if name.endswith(".docx"):
+            doc = Document(uploaded_file)
+            return "\n".join([p.text for p in doc.paragraphs])
+        # default to text
+        content = uploaded_file.read()
+        try:
+            return content.decode("utf-8")
+        except Exception:
+            return content.decode("latin-1", errors="ignore")
+    except Exception as e:
+        st.error(f"Could not read file: {e}")
+        return None
+
+
+def _transcribe_audio(audio_bytes: bytes) -> Optional[str]:
+    if not audio_bytes:
+        return None
+    try:
+        files = {
+            "file": ("audio.wav", audio_bytes, "audio/wav"),
+        }
+        data = {"model": "whisper-1"}
+        headers = {
+            "Authorization": f"Bearer {OPENAI_API_KEY}",
+        }
+        resp = requests.post("https://api.openai.com/v1/audio/transcriptions", headers=headers, data=data, files=files)
+        if resp.status_code != 200:
+            st.error(f"Transcription failed: {resp.text}")
+            return None
+        return resp.json().get("text", "").strip()
+    except Exception as e:
+        st.error(f"Transcription error: {e}")
+        return None
 # Invite-only auth and persistence helpers
 def bootstrap_user(email: str, token: str):
     client = supabase_client()
@@ -171,6 +233,38 @@ def render_admin_panel():
             for inv in invites:
                 status = "used" if inv.get("used_at") else "open"
                 st.code(f"{inv['token']} ({status}) email={inv.get('email','-')}", language="text")
+
+
+def render_sidebar_inputs():
+    with st.sidebar:
+        st.subheader("Context & input")
+
+        uploaded = st.file_uploader("Upload file (pdf, docx, txt, <=2MB)", type=["pdf", "docx", "txt"])
+        if uploaded:
+            text = _extract_text(uploaded)
+            if text:
+                st.session_state.file_context = {"name": uploaded.name, "text": text[:12000]}
+                st.success(f"Loaded {uploaded.name} ({len(text)} chars)")
+        if st.session_state.file_context:
+            st.info(f"Using context: {st.session_state.file_context['name']}")
+            if st.button("Clear context"):
+                st.session_state.file_context = None
+
+        st.markdown("---")
+        st.caption("Voice input (hold to record)")
+        audio_bytes = audio_recorder(text="🎤 Hold to record", pause_threshold=2.0, sample_rate=16000)
+        if audio_bytes:
+            with st.spinner("Transcribing..."):
+                transcript = _transcribe_audio(audio_bytes)
+            if transcript:
+                st.session_state.voice_history.append(transcript)
+                st.success("Voice captured. Sending...")
+                # Send immediately
+                process_user_message(transcript)
+        if st.session_state.voice_history:
+            st.caption("Recent transcripts")
+            for t in st.session_state.voice_history[-3:][::-1]:
+                st.write(f"• {t}")
 
 # Function to load and encode image to base64
 def get_image_base64(image_path):
@@ -515,8 +609,45 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# Admin tools (invite management)
+# Admin tools (invite management) + sidebar inputs
 render_admin_panel()
+render_sidebar_inputs()
+
+
+def process_user_message(prompt: str):
+    if not prompt:
+        return
+    context = ""
+    if st.session_state.file_context:
+        ctx = st.session_state.file_context
+        context = f"\n\n[File context: {ctx['name']}]\n{ctx['text']}"
+    final_prompt = prompt + context
+
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    persist_message("user", prompt)
+    
+    with st.chat_message("user", avatar=user_avatar):
+        st.markdown(prompt)
+    
+    with st.chat_message("assistant", avatar=assistant_avatar):
+        with st.spinner("Thinking..."):
+            response = query_openai_assistant(final_prompt)
+        st.markdown(response)
+    
+    st.session_state.messages.append({"role": "assistant", "content": response})
+    persist_message("assistant", response)
+    
+    st.markdown("""
+    <script>
+    setTimeout(function() {
+        const chatFlow = document.querySelector('.stChatFlow');
+        if (chatFlow) {
+            chatFlow.scrollTop = chatFlow.scrollHeight;
+        }
+    }, 100);
+    </script>
+    """, unsafe_allow_html=True) 
+
 
 # Display chat messages
 for message in st.session_state.messages:
@@ -529,32 +660,4 @@ for message in st.session_state.messages:
 
 # Chat input
 if prompt := st.chat_input("Ask a question about BBR technologies..."):
-    # Add user message to chat history
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    persist_message("user", prompt)
-    
-    # Display user message
-    with st.chat_message("user", avatar=user_avatar):
-        st.markdown(prompt)
-    
-    # Get assistant response
-    with st.chat_message("assistant", avatar=assistant_avatar):
-        with st.spinner("Thinking..."):
-            response = query_openai_assistant(prompt)
-        st.markdown(response)
-    
-    # Add assistant response to chat history
-    st.session_state.messages.append({"role": "assistant", "content": response})
-    persist_message("assistant", response)
-    
-    # Auto-scroll to bottom using JavaScript
-    st.markdown("""
-    <script>
-    setTimeout(function() {
-        const chatFlow = document.querySelector('.stChatFlow');
-        if (chatFlow) {
-            chatFlow.scrollTop = chatFlow.scrollHeight;
-        }
-    }, 100);
-    </script>
-    """, unsafe_allow_html=True) 
+    process_user_message(prompt)
