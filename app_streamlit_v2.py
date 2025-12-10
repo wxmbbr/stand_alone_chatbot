@@ -25,20 +25,18 @@ st.set_page_config(
 
 # Import config values with environment variable fallback for deployment
 try:
-    from config import OPENAI_API_KEY, ASSISTANT_ID
+    from config import OPENAI_API_KEY, ASSISTANT_ID as CONFIG_ASSISTANT_ID
 except ImportError:
-    # Fallback to environment variables for deployment
+    CONFIG_ASSISTANT_ID = None
     OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-    ASSISTANT_ID = os.getenv('OPENAI_ASSISTANT_ID')
-    
-    # Check if environment variables are set
-    if not OPENAI_API_KEY:
-        st.error("❌ OPENAI_API_KEY environment variable is not set. Please configure it in your Render.com service settings.")
-        st.stop()
-    
-    if not ASSISTANT_ID:
-        st.error("❌ OPENAI_ASSISTANT_ID environment variable is not set. Please configure it in your Render.com service settings.")
-        st.stop()
+
+# Allow override via env; fallback to config or default assistant
+ASSISTANT_ID = os.getenv('OPENAI_ASSISTANT_ID_OVERRIDE') or os.getenv('OPENAI_ASSISTANT_ID') or CONFIG_ASSISTANT_ID or "asst_mKMsW8mKPQPzt5rVFBeBB8bu"
+
+# Basic config validation
+if not OPENAI_API_KEY:
+    st.error("❌ OPENAI_API_KEY environment variable is not set. Please configure it in your Render.com service settings.")
+    st.stop()
 
 # Define BBR colors
 BBR_BLUE = "#003876"
