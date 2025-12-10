@@ -328,6 +328,52 @@ st.markdown(f"""
         margin-bottom: 6px;
     }}
 
+    /* Compact action buttons */
+    .compact-row {{
+        display: flex;
+        gap: 10px;
+        margin-top: 6px;
+        margin-bottom: 6px;
+    }}
+    .compact-slot {{
+        position: relative;
+        width: 48px;
+        height: 48px;
+    }}
+    .compact-action {{
+        position: absolute;
+        inset: 0;
+        border-radius: 12px;
+        background: var(--bbr-blue-dark);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.18);
+        cursor: pointer;
+    }}
+    .compact-uploader [data-testid="stFileUploaderDropzone"] {{
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+        background: transparent !important;
+    }}
+    .compact-uploader label {{
+        display: none !important;
+    }}
+    .compact-uploader [data-testid="stFileUploaderUploadButton"] {{
+        display: none !important;
+    }}
+    .compact-uploader [data-testid="stFileUploaderDropzone"] section {{
+        padding: 0 !important;
+        margin: 0 !important;
+        display: none !important;
+    }}
+
     /* Mobile tweaks */
     @media (max-width: 768px) {{
         .page-header {{
@@ -583,26 +629,49 @@ def render_mobile_inputs():
 
 
 def render_quick_actions():
-    st.markdown("### ")
-    actions = st.columns([1, 1], gap="small")
-    with actions[0]:
-        st.caption("📎 Attach")
-        uploaded = st.file_uploader("Attach file", type=["pdf", "docx", "txt"], label_visibility="collapsed", key="inline_file")
-        if uploaded:
+    st.markdown(
+        "<div class='compact-row'>"
+        "<div class='compact-slot compact-uploader'>",
+        unsafe_allow_html=True,
+    )
+    uploaded = st.file_uploader(
+        "Attach file",
+        type=["pdf", "docx", "txt"],
+        label_visibility="collapsed",
+        key="inline_file",
+    )
+    st.markdown(
+        "<div class='compact-action'>📎</div>"
+        "</div>"
+        "<div class='compact-slot'>"
+        "<div class='compact-action'>🎤</div>",
+        unsafe_allow_html=True,
+    )
+    audio_bytes = audio_recorder(
+        text="",
+        pause_threshold=2.0,
+        sample_rate=16000,
+        key="inline_audio",
+        icon_size="1.2rem",
+    )
+    st.markdown("</div></div>", unsafe_allow_html=True)
+
+    if uploaded:
+        if uploaded.type not in ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "text/plain"]:
+            st.error("Unsupported file type. Please use pdf, docx, or txt.")
+        else:
             text = _extract_text(uploaded)
             if text:
                 st.session_state.file_context = {"name": uploaded.name, "text": text[:12000]}
                 st.success(f"Loaded {uploaded.name} ({len(text)} chars)")
-    with actions[1]:
-        st.caption("🎤 Voice")
-        audio_bytes = audio_recorder(text="", pause_threshold=2.0, sample_rate=16000, key="inline_audio")
-        if audio_bytes:
-            with st.spinner("Transcribing..."):
-                transcript = _transcribe_audio(audio_bytes)
-            if transcript:
-                st.session_state.voice_history.append(transcript)
-                st.success("Voice captured. Sending...")
-                process_user_message(transcript)
+
+    if audio_bytes:
+        with st.spinner("Transcribing..."):
+            transcript = _transcribe_audio(audio_bytes)
+        if transcript:
+            st.session_state.voice_history.append(transcript)
+            st.success("Voice captured. Sending...")
+            process_user_message(transcript)
 
 
 def process_user_message(prompt: str):
