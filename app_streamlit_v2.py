@@ -185,6 +185,15 @@ st.markdown(f"""
         font-weight: 800;
         letter-spacing: 0.01em;
     }}
+    .logo-container img {{
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #0b2c70;
+        padding: 4px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.18);
+        object-fit: contain;
+    }}
 
     /* Chat area */
     .stChatFlow {{
