@@ -113,7 +113,8 @@ def get_image_base64(image_path):
         return base64.b64encode(img_file.read()).decode()
 
 # Get BBR logo and background image as base64
-bbr_logo_path = "images/BBR_Logo.png"
+# Use the round brand mark provided by the user
+bbr_logo_path = "images/BBR_Logo_round.png"
 ebbr_logo_path = "images/EBBR_logo.png"
 user_avatar_path = "images/user.png"
 bbr_logo_base64 = get_image_base64(bbr_logo_path)
