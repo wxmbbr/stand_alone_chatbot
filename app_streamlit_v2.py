@@ -201,9 +201,9 @@ st.markdown(f"""
         width: 44px;
         height: 44px;
         border-radius: 50%;
-        background: #0b2c70;
-        padding: 4px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.18);
+        background: transparent;
+        padding: 0;
+        box-shadow: none;
         object-fit: contain;
     }}
 
