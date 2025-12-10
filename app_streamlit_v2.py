@@ -161,8 +161,8 @@ st.markdown(f"""
     }}
 
     .block-container {{
-        padding: 0 18px 140px 18px !important;
-        max-width: 1100px !important;
+        padding: 0 18px 120px 18px !important;
+        max-width: 900px !important;
         margin: 0 auto;
     }}
 
@@ -643,106 +643,109 @@ def render_mobile_inputs():
 
 
 def render_inline_input_icons():
-    """Render mic and upload icons integrated into the chat input bar - NO SIDEBAR."""
+    """Clean interface - file/voice tools hidden in a minimal toggle."""
     
     # Show file context badge if a file is loaded
     if st.session_state.file_context:
         fname = st.session_state.file_context["name"]
-        col1, col2 = st.columns([6, 1])
-        with col1:
-            st.markdown(f"""
-            <div class="file-context-badge">
-                📎 {fname}
-            </div>
-            """, unsafe_allow_html=True)
-        with col2:
-            if st.button("✕", key="clear_file_ctx", help="Clear file"):
-                st.session_state.file_context = None
-                st.rerun()
+        st.markdown(f"""
+        <div style="display:inline-flex;align-items:center;background:#e0f2fe;border:1px solid #7dd3fc;
+        color:#0369a1;padding:4px 12px;border-radius:16px;font-size:0.85rem;margin-bottom:8px;gap:8px;">
+            📎 {fname}
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("✕ Clear", key="clear_file_ctx"):
+            st.session_state.file_context = None
+            st.rerun()
     
-    # Compact inline controls - positioned at bottom, minimal footprint
+    # Initialize toggle state
+    if "show_tools" not in st.session_state:
+        st.session_state.show_tools = False
+    
+    # Small toggle button for tools - positioned at bottom
     st.markdown("""
     <style>
-    /* Hide the widget container but keep it functional */
-    .inline-controls-row {
+    .tools-toggle {
         position: fixed;
-        bottom: 80px;
+        bottom: 75px;
         left: 50%;
         transform: translateX(-50%);
-        display: flex;
-        align-items: center;
-        gap: 12px;
         z-index: 1002;
-        background: rgba(255,255,255,0.95);
-        padding: 8px 16px;
-        border-radius: 24px;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+    .tools-toggle button {
+        background: #f3f4f6 !important;
+        border: 1px solid #e5e7eb !important;
+        border-radius: 20px !important;
+        padding: 6px 14px !important;
+        font-size: 0.85rem !important;
+        color: #6b7280 !important;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .tools-toggle button:hover {
+        background: #e5e7eb !important;
+        color: #374151 !important;
+    }
+    .tools-panel {
+        position: fixed;
+        bottom: 115px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: white;
         border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 16px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        z-index: 1003;
+        max-width: 400px;
+        width: 90vw;
     }
-    .inline-controls-row .stFileUploader {
-        max-width: 180px;
-    }
-    .inline-controls-row [data-testid="stFileUploaderDropzone"] {
-        padding: 8px !important;
-        min-height: auto !important;
-        border-radius: 12px !important;
-    }
-    .inline-controls-row [data-testid="stFileUploaderDropzone"] section {
-        padding: 4px !important;
-    }
-    .inline-controls-row [data-testid="stFileUploaderDropzone"] small {
-        display: none !important;
-    }
-    .inline-controls-row label {
-        font-size: 0.8rem !important;
-        margin-bottom: 4px !important;
-    }
-    /* Audio recorder compact */
-    .inline-controls-row .stAudioRecorder {
-        transform: scale(0.9);
-    }
-    
     @media (max-width: 768px) {
-        .inline-controls-row {
-            bottom: 70px;
-            padding: 6px 12px;
-            gap: 8px;
-        }
-        .inline-controls-row .stFileUploader {
-            max-width: 140px;
-        }
+        .tools-toggle { bottom: 65px; }
+        .tools-panel { bottom: 105px; }
     }
     </style>
     """, unsafe_allow_html=True)
     
-    # Create inline row with file uploader and voice recorder
-    st.markdown('<div class="inline-controls-row">', unsafe_allow_html=True)
-    
-    col1, col2 = st.columns([2, 1])
-    with col1:
-        uploaded = st.file_uploader(
-            "📎 Attach",
-            type=["pdf", "docx", "txt"],
-            key="inline_file",
-            label_visibility="collapsed",
-        )
+    # Toggle button
+    col1, col2, col3 = st.columns([1, 1, 1])
     with col2:
-        audio_bytes = audio_recorder(
-            text="",
-            pause_threshold=2.0,
-            sample_rate=16000,
-            key="inline_audio",
-            icon_size="1.5rem",
-        )
+        if st.button("📎 🎤 Tools" if not st.session_state.show_tools else "✕ Close", key="toggle_tools"):
+            st.session_state.show_tools = not st.session_state.show_tools
+            st.rerun()
     
-    st.markdown('</div>', unsafe_allow_html=True)
+    # Show tools panel only when toggled
+    uploaded = None
+    audio_bytes = None
+    
+    if st.session_state.show_tools:
+        st.markdown("---")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("**📎 Upload File**")
+            uploaded = st.file_uploader(
+                "PDF, DOCX, TXT",
+                type=["pdf", "docx", "txt"],
+                key="panel_file",
+                label_visibility="collapsed",
+            )
+        with col2:
+            st.markdown("**🎤 Voice Input**")
+            audio_bytes = audio_recorder(
+                text="Hold to record",
+                pause_threshold=2.0,
+                sample_rate=16000,
+                key="panel_audio",
+            )
     
     # Process uploaded file
     if uploaded:
         text = _extract_text(uploaded)
         if text:
             st.session_state.file_context = {"name": uploaded.name, "text": text[:12000]}
+            st.session_state.show_tools = False
             st.toast(f"📎 Loaded {uploaded.name}")
+            st.rerun()
 
     # Process voice input
     if audio_bytes:
@@ -750,6 +753,7 @@ def render_inline_input_icons():
             transcript = _transcribe_audio(audio_bytes)
         if transcript:
             st.session_state.voice_history.append(transcript)
+            st.session_state.show_tools = False
             st.toast("🎤 Voice captured")
             process_user_message(transcript)
 
