@@ -10,6 +10,7 @@ import requests
 import base64
 from datetime import datetime
 from typing import Optional, Dict, Any, List
+from pathlib import Path
 
 from audio_recorder_streamlit import audio_recorder
 from pypdf import PdfReader
@@ -112,9 +113,20 @@ def get_image_base64(image_path):
     with open(image_path, "rb") as img_file:
         return base64.b64encode(img_file.read()).decode()
 
+# Logo resolution helper
+def resolve_logo_path() -> str:
+    candidates = [
+        "images/BBR_Logo-round.png",
+        "images/BBR_Logo_round.png",
+        "images/BBR_Logo.png",
+    ]
+    for p in candidates:
+        if Path(p).exists():
+            return p
+    return candidates[-1]
+
 # Get BBR logo and background image as base64
-# Use the round brand mark provided by the user
-bbr_logo_path = "images/BBR_Logo_round.png"
+bbr_logo_path = resolve_logo_path()
 ebbr_logo_path = "images/EBBR_logo.png"
 user_avatar_path = "images/user.png"
 bbr_logo_base64 = get_image_base64(bbr_logo_path)
@@ -521,6 +533,34 @@ def render_sidebar_inputs():
                 st.write(f"• {t}")
 
 
+def render_mobile_inputs():
+    with st.expander("Uploads & voice (mobile)", expanded=False):
+        uploaded = st.file_uploader("Upload file (pdf, docx, txt, <=2MB)", type=["pdf", "docx", "txt"], key="mobile_file")
+        if uploaded:
+            text = _extract_text(uploaded)
+            if text:
+                st.session_state.file_context = {"name": uploaded.name, "text": text[:12000]}
+                st.success(f"Loaded {uploaded.name} ({len(text)} chars)")
+        if st.session_state.file_context:
+            st.info(f"Using context: {st.session_state.file_context['name']}")
+            if st.button("Clear context", key="mobile_clear_context"):
+                st.session_state.file_context = None
+
+        st.caption("Voice input (hold to record)")
+        audio_bytes = audio_recorder(text="🎤 Hold to record", pause_threshold=2.0, sample_rate=16000, key="mobile_audio")
+        if audio_bytes:
+            with st.spinner("Transcribing..."):
+                transcript = _transcribe_audio(audio_bytes)
+            if transcript:
+                st.session_state.voice_history.append(transcript)
+                st.success("Voice captured. Sending...")
+                process_user_message(transcript)
+        if st.session_state.voice_history:
+            st.caption("Recent transcripts")
+            for t in st.session_state.voice_history[-3:][::-1]:
+                st.write(f"• {t}")
+
+
 def process_user_message(prompt: str):
     if not prompt:
         return
@@ -573,6 +613,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
+render_mobile_inputs()
 render_sidebar_inputs()
 
 # Display chat messages
