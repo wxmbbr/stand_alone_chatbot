@@ -20,6 +20,7 @@ from docx import Document
 from supabase_client import (
     get_client as get_supabase_client,
     get_user_by_email,
+    get_user_by_id,
     create_user,
     count_admins,
     get_invite,
@@ -29,6 +30,7 @@ from supabase_client import (
     create_session,
     touch_session,
     touch_last_login,
+    get_session,
     save_message,
     fetch_messages,
 )
@@ -90,6 +92,11 @@ if "file_context" not in st.session_state:
 
 if "voice_history" not in st.session_state:
     st.session_state.voice_history: List[str] = []
+
+# Helpers
+def _parse_iso(dt_str: str) -> datetime:
+    return datetime.fromisoformat(dt_str.replace("Z", "+00:00"))
+
 
 # Define BBR colors
 BBR_BLUE = "#003876"
@@ -164,6 +171,8 @@ def bootstrap_user(email: str, token: str):
 
     mark_invite_used(client, invite["id"], user["id"])
     session = create_session(client, user["id"], client_info="streamlit")
+    # remember session cookie for 7 days
+    st.experimental_set_cookie("bbr_session", session["id"], max_age=7 * 24 * 3600)
 
     st.session_state.auth_user = user
     st.session_state.session_id = session["id"]
@@ -265,6 +274,34 @@ def render_sidebar_inputs():
             st.caption("Recent transcripts")
             for t in st.session_state.voice_history[-3:][::-1]:
                 st.write(f"• {t}")
+
+
+def try_restore_session():
+    if st.session_state.auth_user and st.session_state.session_id:
+        return
+    cookie_session = st.experimental_get_cookie("bbr_session")
+    if not cookie_session:
+        return
+    client = supabase_client()
+    session_row = get_session(client, cookie_session)
+    if not session_row:
+        st.experimental_set_cookie("bbr_session", "", max_age=0)
+        return
+    # Expire after 7 days of inactivity
+    last_active = session_row.get("last_active_at") or session_row.get("started_at")
+    if last_active:
+        last_dt = _parse_iso(last_active)
+        if last_dt < datetime.now(timezone.utc) - timedelta(days=7):
+            st.experimental_set_cookie("bbr_session", "", max_age=0)
+            return
+    user = get_user_by_id(client, session_row["user_id"])
+    if not user:
+        st.experimental_set_cookie("bbr_session", "", max_age=0)
+        return
+    st.session_state.auth_user = user
+    st.session_state.session_id = session_row["id"]
+    history = fetch_messages(client, session_row["id"], limit=50)
+    st.session_state.messages = [{"role": m["role"], "content": m["content"]} for m in history] if history else []
 
 # Function to load and encode image to base64
 def get_image_base64(image_path):
@@ -611,6 +648,8 @@ def query_openai_assistant(user_query):
         
     except Exception as e:
         return f"Error querying assistant: {str(e)}"
+
+try_restore_session()
 
 # Require authentication before showing chat
 if not st.session_state.auth_user:

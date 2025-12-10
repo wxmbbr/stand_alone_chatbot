@@ -30,6 +30,12 @@ def get_user_by_email(client: Client, email: str) -> Optional[Dict[str, Any]]:
     return data[0] if data else None
 
 
+def get_user_by_id(client: Client, user_id: str) -> Optional[Dict[str, Any]]:
+    res = client.table("users").select("*").eq("id", user_id).limit(1).execute()
+    data = res.data or []
+    return data[0] if data else None
+
+
 def count_admins(client: Client) -> int:
     res = client.table("users").select("id", count="exact").eq("role", "admin").execute()
     return res.count or 0
@@ -119,6 +125,12 @@ def create_session(client: Client, user_id: str, client_info: Optional[str] = No
 
 def touch_session(client: Client, session_id: str) -> None:
     client.table("sessions").update({"last_active_at": _now().isoformat()}).eq("id", session_id).execute()
+
+
+def get_session(client: Client, session_id: str) -> Optional[Dict[str, Any]]:
+    res = client.table("sessions").select("*").eq("id", session_id).limit(1).execute()
+    data = res.data or []
+    return data[0] if data else None
 
 
 def save_message(client: Client, session_id: str, user_id: Optional[str], role: str, content: str) -> None:
