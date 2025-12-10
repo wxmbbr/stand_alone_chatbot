@@ -17,7 +17,7 @@ from docx import Document
 
 # Page config must be the first Streamlit command
 st.set_page_config(
-    page_title="BBR Intelligence - Web Assistant",
+    page_title="BBR Intelligence",
     page_icon="🏗️",
     layout="wide"
 )
@@ -126,15 +126,16 @@ st.markdown(f"""
 <style>
     :root {{
         --bbr-blue: {BBR_BLUE};
+        --bbr-blue-dark: #0b2c70;
         --bbr-light: {BBR_LIGHT_BLUE};
         --bbr-gray: {BBR_GRAY};
         --bbr-text: {BBR_TEXT};
         --card: #ffffff;
-        --shadow: 0 10px 40px rgba(0,0,0,0.08);
+        --shadow: 0 12px 32px rgba(0,0,0,0.12);
     }}
 
     body, .stApp {{
-        background: radial-gradient(circle at 20% 20%, #e9f1ff 0%, #f7fbff 28%, #eef3fa 60%, #ffffff 100%);
+        background: linear-gradient(160deg, #f5f7fb 0%, #eef2f8 60%, #f9fbff 100%);
         color: var(--bbr-text);
     }}
 
@@ -149,15 +150,15 @@ st.markdown(f"""
     }}
 
     .block-container {{
-        padding: 0 18px 120px 18px !important;
+        padding: 0 18px 140px 18px !important;
         max-width: 1100px !important;
         margin: 0 auto;
     }}
 
     .page-header {{
-        background: rgba(255,255,255,0.9);
-        border: 1px solid #e8eef5;
-        box-shadow: var(--shadow);
+        background: var(--bbr-blue-dark);
+        border: none;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.18);
         height: 70px;
         border-radius: 14px;
         width: 100%;
@@ -178,10 +179,10 @@ st.markdown(f"""
     }}
 
     .header-description {{
-        color: var(--bbr-blue);
-        font-size: 1.05rem;
-        font-weight: 700;
-        letter-spacing: 0.02em;
+        color: #fff;
+        font-size: 1.08rem;
+        font-weight: 800;
+        letter-spacing: 0.01em;
     }}
 
     /* Chat area */
@@ -194,8 +195,8 @@ st.markdown(f"""
         padding: 18px !important;
         background: var(--card);
         box-shadow: var(--shadow);
-        height: calc(100vh - 220px) !important;
-        max-height: calc(100vh - 220px) !important;
+        height: calc(100vh - 240px) !important;
+        max-height: calc(100vh - 240px) !important;
         overflow-y: auto !important;
     }}
 
@@ -203,7 +204,7 @@ st.markdown(f"""
         width: 10px;
     }}
     .stChatFlow::-webkit-scrollbar-track {{
-        background: #f3f6fb;
+        background: #f1f3f9;
         border-radius: 999px;
     }}
     .stChatFlow::-webkit-scrollbar-thumb {{
@@ -218,26 +219,26 @@ st.markdown(f"""
         gap: 12px !important;
     }}
     .stChatMessage .stAvatar {{
-        box-shadow: 0 4px 18px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 18px rgba(0,0,0,0.12);
     }}
     .stChatMessage.assistant [data-testid="stMarkdownContainer"] {{
-        background: #f6f8fb !important;
+        background: #ffffff !important;
         border: 1px solid #e4e9f2 !important;
         color: var(--bbr-text) !important;
         border-radius: 14px !important;
         padding: 0.9rem 1rem !important;
-        box-shadow: none !important;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.06) !important;
     }}
     .stChatMessage.user [data-testid="stMarkdownContainer"] {{
-        background: linear-gradient(135deg, var(--bbr-blue), #003060) !important;
+        background: linear-gradient(135deg, var(--bbr-blue-dark), #002d79) !important;
         color: #fff !important;
         border: none !important;
-        border-radius: 14px 14px 4px 14px !important;
-        padding: 0.9rem 1rem !important;
-        box-shadow: none !important;
+        border-radius: 14px 14px 6px 14px !important;
+        padding: 0.95rem 1.05rem !important;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.12) !important;
     }}
     .stChatMessage.assistant pre {{
-        background: #fff !important;
+        background: #f8f9fd !important;
         border: 1px solid #e6ebf5 !important;
         border-radius: 10px !important;
         padding: 0.75rem !important;
@@ -245,7 +246,7 @@ st.markdown(f"""
 
     /* Input */
     .stChatFloatingInputContainer {{
-        bottom: 16px !important;
+        bottom: 18px !important;
         width: 100% !important;
         max-width: 1100px !important;
         margin: 0 auto !important;
@@ -253,28 +254,29 @@ st.markdown(f"""
         transform: translateX(-50%) !important;
         position: fixed !important;
         z-index: 1001 !important;
-        background: rgba(255,255,255,0.92) !important;
-        border: 1px solid #e7edf6 !important;
+        background: rgba(255,255,255,0.94) !important;
+        border: 1px solid #dfe6f2 !important;
         border-radius: 14px !important;
         box-shadow: var(--shadow);
-        backdrop-filter: blur(8px);
+        backdrop-filter: blur(10px);
         padding: 10px !important;
     }}
     .stChatInputContainer input {{
         border-radius: 12px !important;
-        border: 1px solid #d8e2f2 !important;
-        padding: 0.85rem 1rem !important;
-        background: #f9fbff !important;
+        border: 1px solid #cfd9ec !important;
+        padding: 0.9rem 1rem !important;
+        background: #f7f9fd !important;
     }}
     .stChatInputContainer button {{
         border-radius: 12px !important;
         background: var(--bbr-blue) !important;
         color: #fff !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
     }}
 
     /* Sidebar tweaks */
     section[data-testid="stSidebar"] > div {{
-        background: rgba(255,255,255,0.92);
+        background: #f9fbff;
         border-right: 1px solid #e7edf6;
     }}
 
@@ -288,25 +290,25 @@ st.markdown(f"""
         .page-header {{
             margin: 10px auto 6px auto;
             padding: 0 10px;
-            height: 60px;
+            height: 56px;
             border-radius: 12px;
         }}
         .logo-container img {{
-            height: 38px;
+            height: 36px;
         }}
         .header-description {{
             font-size: 0.95rem;
         }}
         .block-container {{
-            padding: 0 10px 110px 10px !important;
+            padding: 0 10px 120px 10px !important;
         }}
         .stChatFlow {{
-            height: calc(100vh - 230px) !important;
+            height: calc(100vh - 240px) !important;
             padding: 12px !important;
         }}
         .stChatMessage {{
             max-width: 100% !important;
-            margin: 0.9rem 0 !important;
+            margin: 0.85rem 0 !important;
         }}
         .stChatMessage.assistant [data-testid="stMarkdownContainer"],
         .stChatMessage.user [data-testid="stMarkdownContainer"] {{
@@ -556,7 +558,7 @@ st.markdown(f"""
 <div class="page-header">
     <div class="logo-container">
         <img src="data:image/png;base64,{bbr_logo_base64}" alt="BBR Logo" style="height: 50px; margin-right: 15px;">
-        <div class="header-description">BBR Service Assistant</div>
+        <div class="header-description">BBR Intelligence</div>
     </div>
 </div>
 """, unsafe_allow_html=True)
