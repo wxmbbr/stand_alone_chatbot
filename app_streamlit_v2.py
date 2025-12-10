@@ -631,7 +631,8 @@ def render_mobile_inputs():
 def render_quick_actions():
     st.markdown(
         "<div class='compact-row'>"
-        "<div class='compact-slot compact-uploader'>",
+        "  <div class='compact-slot compact-uploader'>"
+        "    <div class='compact-action' title='Attach file'>+</div>",
         unsafe_allow_html=True,
     )
     uploaded = st.file_uploader(
@@ -641,10 +642,9 @@ def render_quick_actions():
         key="inline_file",
     )
     st.markdown(
-        "<div class='compact-action'>📎</div>"
-        "</div>"
-        "<div class='compact-slot'>"
-        "<div class='compact-action'>🎤</div>",
+        "  </div>"
+        "  <div class='compact-slot'>"
+        "    <div class='compact-action' title='Record voice'>🎤</div>",
         unsafe_allow_html=True,
     )
     audio_bytes = audio_recorder(
@@ -654,7 +654,14 @@ def render_quick_actions():
         key="inline_audio",
         icon_size="1.2rem",
     )
-    st.markdown("</div></div>", unsafe_allow_html=True)
+    st.markdown(
+        "  </div>"
+        "</div>"
+        "<style>"
+        "  .stChatFloatingInputContainer { padding-bottom: 60px !important; }"
+        "</style>",
+        unsafe_allow_html=True,
+    )
 
     if uploaded:
         if uploaded.type not in ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "text/plain"]:
