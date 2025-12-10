@@ -122,319 +122,209 @@ bbr_logo_base64 = get_image_base64(bbr_logo_path)
 assistant_avatar = ebbr_logo_path  # Direct path to image file
 user_avatar = user_avatar_path  # Direct path to user avatar image
 
-# AGGRESSIVE SCROLLING CSS - COMPLETELY REDESIGNED
 st.markdown(f"""
 <style>
-    /* FORCE SCROLLING - MAIN CONTAINER */
-    .main {{
-        max-width: 100% !important;
-        height: 100vh !important;
-        overflow: auto !important;  /* CHANGED: Enable scrolling */
-        overflow-x: hidden !important;  /* Hide horizontal scroll */
-        overflow-y: auto !important;  /* Force vertical scroll */
-        padding: 0 !important;
-        margin: 0 !important;
-        background-color: white;
-        position: relative !important;
+    :root {{
+        --bbr-blue: {BBR_BLUE};
+        --bbr-light: {BBR_LIGHT_BLUE};
+        --bbr-gray: {BBR_GRAY};
+        --bbr-text: {BBR_TEXT};
+        --card: #ffffff;
+        --shadow: 0 10px 40px rgba(0,0,0,0.08);
     }}
-    
-    /* STREAMLIT APP CONTAINER - FORCE SCROLLING */
-    .stApp {{
-        background: white;
-        height: 100vh !important;
-        overflow: auto !important;
-        overflow-x: hidden !important;
-        overflow-y: auto !important;
+
+    body, .stApp {{
+        background: radial-gradient(circle at 20% 20%, #e9f1ff 0%, #f7fbff 28%, #eef3fa 60%, #ffffff 100%);
+        color: var(--bbr-text);
     }}
-    
-    /* BLOCK CONTAINER - FORCE SCROLLING */
-    .block-container {{
-        padding: 0 !important;
-        max-width: 100% !important;
-        height: auto !important;
-        overflow: visible !important;
-    }}
-    
-    /* Header */
-    header {{
+
+    header, [data-testid="stHeader"], [data-testid="stToolbar"] {{
         display: none !important;
     }}
 
-    /* Page header - Make sure it always stays visible */
+    .main {{
+        max-width: 1200px !important;
+        padding: 0 !important;
+        margin: 0 auto !important;
+    }}
+
+    .block-container {{
+        padding: 0 18px 120px 18px !important;
+        max-width: 1100px !important;
+        margin: 0 auto;
+    }}
+
     .page-header {{
-        background-color: white;
-        border-bottom: 1px solid #e6e6e6;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        height: 80px;
+        background: rgba(255,255,255,0.9);
+        border: 1px solid #e8eef5;
+        box-shadow: var(--shadow);
+        height: 70px;
+        border-radius: 14px;
         width: 100%;
         display: flex;
         align-items: center;
-        padding: 0 20px;
-        margin-bottom: 10px;
+        padding: 0 18px;
+        margin: 18px auto 12px auto;
         position: sticky;
-        top: 0;
+        top: 10px;
         z-index: 1000;
+        backdrop-filter: blur(8px);
     }}
 
     .logo-container {{
         display: flex;
         align-items: center;
-        max-width: 80%;
-        width: 80%;
-        margin: 0 auto;
+        gap: 12px;
     }}
 
     .header-description {{
-        margin-left: 20px;
-        color: {BBR_BLUE};
-        font-size: 1.2rem;
-        font-weight: bold;
+        color: var(--bbr-blue);
+        font-size: 1.05rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
     }}
-    
-    /* CHAT FLOW CONTAINER - AGGRESSIVE SCROLLING FIX */
+
+    /* Chat area */
     .stChatFlow {{
-        border: 2px solid #e6e6e6 !important;
-        border-radius: 8px !important;
-        max-width: 80% !important;
-        width: 80% !important;
-        margin: 10px auto 120px auto !important;  /* Added bottom margin for input */
-        padding: 20px !important;
-        position: relative !important;
-        
-        /* FORCE SCROLLING - MOST IMPORTANT */
-        height: calc(100vh - 200px) !important;  /* Fixed height */
-        max-height: calc(100vh - 200px) !important;
-        overflow: auto !important;
-        overflow-x: hidden !important;
-        overflow-y: scroll !important;  /* FORCE vertical scroll */
-        
-        /* FORCE SCROLLBAR VISIBILITY */
-        scrollbar-width: auto !important;  /* Firefox */
-        -ms-overflow-style: scrollbar !important;  /* IE/Edge */
+        border: none !important;
+        border-radius: 16px !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 auto 18px auto !important;
+        padding: 18px !important;
+        background: var(--card);
+        box-shadow: var(--shadow);
+        height: calc(100vh - 220px) !important;
+        max-height: calc(100vh - 220px) !important;
+        overflow-y: auto !important;
     }}
-    
-    /* WEBKIT SCROLLBAR STYLING - FORCE VISIBILITY */
+
     .stChatFlow::-webkit-scrollbar {{
-        width: 12px !important;
-        display: block !important;
-        background-color: #f1f1f1 !important;
+        width: 10px;
     }}
-    
     .stChatFlow::-webkit-scrollbar-track {{
-        background-color: #f1f1f1 !important;
-        border-radius: 6px !important;
+        background: #f3f6fb;
+        border-radius: 999px;
     }}
-    
     .stChatFlow::-webkit-scrollbar-thumb {{
-        background-color: {BBR_BLUE} !important;
-        border-radius: 6px !important;
-        border: 2px solid #f1f1f1 !important;
+        background: var(--bbr-blue);
+        border-radius: 999px;
     }}
-    
-    .stChatFlow::-webkit-scrollbar-thumb:hover {{
-        background-color: #002a5c !important;
+
+    /* Messages */
+    .stChatMessage {{
+        max-width: 90% !important;
+        margin: 1rem 0 !important;
+        gap: 12px !important;
     }}
-    
-    /* CHAT MESSAGES CONTAINER - ENSURE PROPER FLOW */
-    .stChatFlow > div {{
-        height: auto !important;
-        overflow: visible !important;
+    .stChatMessage .stAvatar {{
+        box-shadow: 0 4px 18px rgba(0,0,0,0.1);
     }}
-    
-    .stChatFlow > div > div {{
-        height: auto !important;
-        overflow: visible !important;
+    .stChatMessage.assistant [data-testid="stMarkdownContainer"] {{
+        background: #f6f8fb !important;
+        border: 1px solid #e4e9f2 !important;
+        color: var(--bbr-text) !important;
+        border-radius: 14px !important;
+        padding: 0.9rem 1rem !important;
+        box-shadow: none !important;
     }}
-    
-    /* Chat input container - FIXED POSITION */
+    .stChatMessage.user [data-testid="stMarkdownContainer"] {{
+        background: linear-gradient(135deg, var(--bbr-blue), #003060) !important;
+        color: #fff !important;
+        border: none !important;
+        border-radius: 14px 14px 4px 14px !important;
+        padding: 0.9rem 1rem !important;
+        box-shadow: none !important;
+    }}
+    .stChatMessage.assistant pre {{
+        background: #fff !important;
+        border: 1px solid #e6ebf5 !important;
+        border-radius: 10px !important;
+        padding: 0.75rem !important;
+    }}
+
+    /* Input */
     .stChatFloatingInputContainer {{
-        bottom: 20px !important;
-        width: 80% !important;
-        margin: auto !important;
-        border-top: 1px solid #e6e6e6 !important;
-        position: fixed !important;
-        background: rgba(255, 255, 255, 0.95) !important;
-        backdrop-filter: blur(5px) !important;
-        border-radius: 12px !important;
-        z-index: 1000 !important;
+        bottom: 16px !important;
+        width: 100% !important;
+        max-width: 1100px !important;
+        margin: 0 auto !important;
         left: 50% !important;
         transform: translateX(-50%) !important;
-        box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.1) !important;
+        position: fixed !important;
+        z-index: 1001 !important;
+        background: rgba(255,255,255,0.92) !important;
+        border: 1px solid #e7edf6 !important;
+        border-radius: 14px !important;
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(8px);
+        padding: 10px !important;
     }}
-    
-    /* Message containers - IMPROVED SPACING */
-    .stChatMessage {{
-        max-width: 85% !important;
-        margin: 1.5rem 0 !important;
-        padding: 0 0 0 30px !important;
-        display: flex !important;
-        flex-direction: row !important;
-        align-items: flex-start !important;
-        position: relative !important;
-        clear: both !important;
-    }}
-    
-    /* Custom avatar positioning with significant margin from edge */
-    .stChatMessage.user .stAvatar {{
-        order: 1 !important;
-        background-color: #808080 !important;
-        padding: 5px !important;
-        margin-right: 12px !important;
-        margin-left: 30px !important;
-        border-radius: 50% !important;
-        position: relative !important;
-        left: 10px !important;
-    }}
-    
-    .stChatMessage.assistant .stAvatar {{
-        order: 1 !important;
-        background-color: white !important;
-        border: 2px solid {BBR_BLUE} !important;
-        padding: 2px !important;
-        margin-right: 12px !important;
-        margin-left: 30px !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        border-radius: 50% !important;
-        width: 40px !important;
-        height: 40px !important;
-        overflow: hidden !important;
-        position: relative !important;
-        left: 10px !important;
-    }}
-    
-    /* Avatar content */
-    .stChatMessage.user .stAvatar svg {{
-        fill: white !important;
-        transform: scale(0.8) !important;
-    }}
-    
-    /* User message styling (LEFT SIDE) */
-    .stChatMessage.user {{
-        justify-content: flex-start !important;
-        margin-right: auto !important;
-        margin-left: 1rem !important;
-        text-align: left !important;
-        float: left !important;
-        clear: both !important;
-        padding-left: 15px !important;
-    }}
-    
-    .stChatMessage.user [data-testid="stMarkdownContainer"] {{
-        background-color: {BBR_LIGHT_BLUE} !important;
-        color: {BBR_BLUE} !important;
-        border-radius: 0px 18px 18px 18px !important;
-        padding: 0.75rem 1.25rem !important;
-        border: none !important;
-        box-shadow: 0px 1px 3px rgba(0,0,0,0.1) !important;
-        order: 2 !important;
-        text-align: left !important;
-        word-wrap: break-word !important;
-        overflow-wrap: break-word !important;
-        max-width: 400px !important;
-    }}
-    
-    /* Assistant message styling (LEFT SIDE) */
-    .stChatMessage.assistant {{
-        justify-content: flex-start !important;
-        margin-right: auto !important;
-        margin-left: 1rem !important;
-        text-align: left !important;
-        float: left !important;
-        clear: both !important;
-        padding-left: 15px !important;
-    }}
-    
-    .stChatMessage.assistant [data-testid="stMarkdownContainer"] {{
-        background-color: {BBR_GRAY} !important;
-        color: {BBR_TEXT} !important;
-        border-radius: 0px 18px 18px 18px !important;
-        padding: 0.75rem 1.25rem !important;
-        border: none !important;
-        box-shadow: 0px 1px 3px rgba(0,0,0,0.1) !important;
-        order: 2 !important;
-        word-wrap: break-word !important;
-        overflow-wrap: break-word !important;
-        max-width: 500px !important;
-    }}
-
-    /* Code or suggestion styling within assistant messages */
-    .stChatMessage.assistant [data-testid="stMarkdownContainer"] pre {{
-        background-color: rgba(255, 255, 255, 0.8) !important;
-        border-radius: 8px !important;
-        padding: 0.75rem !important;
-        margin: 0.5rem 0 !important;
-        border-left: 3px solid {BBR_BLUE} !important;
-        overflow-x: auto !important;
-        max-width: 100% !important;
-    }}
-
-    /* Fix for content jumping */
-    [data-testid="stVerticalBlock"] {{
-        gap: 0 !important;
-        padding: 0 !important;
-    }}
-    
-    /* Error message styling */
-    .error-message {{
-        background-color: rgba(255, 238, 238, 0.9);
-        border-left: 3px solid #c00;
-        padding: 1rem;
-        margin: 1rem;
-        border-radius: 4px;
-    }}
-    
-    /* Hide unnecessary elements */
-    [data-testid="stDecoration"],
-    [data-testid="stHeader"],
-    [data-testid="stToolbar"] {{
-        display: none !important;
-    }}
-    
-    /* Chat header styling */
-    .stTitle {{
-        height: 0 !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        display: none !important;
-    }}
-    
-    /* Caption styling */
-    .stCaption {{
-        display: none !important;
-    }}
-    
-    /* Make sure chat message content doesn't interfere with scrolling */
-    [data-testid="stChatMessageContent"] {{
-        overflow-y: visible !important;
-        overflow-x: hidden !important;
-    }}
-
-    /* Style chat input */
-    .stChatInputContainer {{
-        padding: 0.75rem 1rem !important;
-        background: rgba(255, 255, 255, 0.95) !important;
-        box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.1) !important;
-        border-radius: 12px !important;
-        margin-bottom: 10px !important;
-    }}
-    
     .stChatInputContainer input {{
-        border-color: {BBR_BLUE} !important;
-        border-radius: 20px !important;
-        padding: 0.75rem 1rem !important;
-        background-color: rgba(255, 255, 255, 0.9) !important;
+        border-radius: 12px !important;
+        border: 1px solid #d8e2f2 !important;
+        padding: 0.85rem 1rem !important;
+        background: #f9fbff !important;
     }}
-    
     .stChatInputContainer button {{
-        border-radius: 20px !important;
-        background-color: {BBR_BLUE} !important;
+        border-radius: 12px !important;
+        background: var(--bbr-blue) !important;
+        color: #fff !important;
     }}
-    
-    /* FORCE SCROLLING WITH JAVASCRIPT */
-    .scroll-to-bottom {{
-        scroll-behavior: smooth !important;
+
+    /* Sidebar tweaks */
+    section[data-testid="stSidebar"] > div {{
+        background: rgba(255,255,255,0.92);
+        border-right: 1px solid #e7edf6;
+    }}
+
+    /* Badges / captions */
+    .stCaption {{
+        color: #5a6880 !important;
+    }}
+
+    /* Mobile tweaks */
+    @media (max-width: 768px) {{
+        .page-header {{
+            margin: 10px auto 6px auto;
+            padding: 0 10px;
+            height: 60px;
+            border-radius: 12px;
+        }}
+        .logo-container img {{
+            height: 38px;
+        }}
+        .header-description {{
+            font-size: 0.95rem;
+        }}
+        .block-container {{
+            padding: 0 10px 110px 10px !important;
+        }}
+        .stChatFlow {{
+            height: calc(100vh - 230px) !important;
+            padding: 12px !important;
+        }}
+        .stChatMessage {{
+            max-width: 100% !important;
+            margin: 0.9rem 0 !important;
+        }}
+        .stChatMessage.assistant [data-testid="stMarkdownContainer"],
+        .stChatMessage.user [data-testid="stMarkdownContainer"] {{
+            padding: 0.75rem 0.85rem !important;
+            font-size: 0.95rem !important;
+        }}
+        .stChatFloatingInputContainer {{
+            bottom: 12px !important;
+            padding: 8px !important;
+        }}
+        .stChatInputContainer input {{
+            padding: 0.75rem 0.85rem !important;
+            font-size: 0.95rem !important;
+        }}
+        .stChatInputContainer button {{
+            min-height: 40px !important;
+            font-size: 0.95rem !important;
+        }}
     }}
 </style>
 
