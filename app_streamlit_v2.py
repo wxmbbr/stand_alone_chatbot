@@ -8,7 +8,25 @@ import os
 import json
 import requests
 import base64
-from datetime import datetime
+import secrets
+from datetime import datetime, timezone
+from typing import Optional, Dict, Any, List
+
+from supabase_client import (
+    get_client as get_supabase_client,
+    get_user_by_email,
+    create_user,
+    count_admins,
+    get_invite,
+    mark_invite_used,
+    create_invite,
+    list_invites,
+    create_session,
+    touch_session,
+    touch_last_login,
+    save_message,
+    fetch_messages,
+)
 
 # Page config must be the first Streamlit command
 st.set_page_config(
@@ -19,26 +37,140 @@ st.set_page_config(
 
 # Import config values with environment variable fallback for deployment
 try:
-    from config import OPENAI_API_KEY, ASSISTANT_ID
+    from config import (
+        OPENAI_API_KEY,
+        ASSISTANT_ID,
+        SUPABASE_URL,
+        SUPABASE_ANON_KEY,
+        SUPABASE_SERVICE_ROLE_KEY,
+    )
 except ImportError:
     # Fallback to environment variables for deployment
-    OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-    ASSISTANT_ID = os.getenv('OPENAI_ASSISTANT_ID')
-    
-    # Check if environment variables are set
-    if not OPENAI_API_KEY:
-        st.error("❌ OPENAI_API_KEY environment variable is not set. Please configure it in your Render.com service settings.")
-        st.stop()
-    
-    if not ASSISTANT_ID:
-        st.error("❌ OPENAI_ASSISTANT_ID environment variable is not set. Please configure it in your Render.com service settings.")
-        st.stop()
+    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+    ASSISTANT_ID = os.getenv("OPENAI_ASSISTANT_ID")
+    SUPABASE_URL = os.getenv("SUPABASE_URL")
+    SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY")
+    SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+
+# Basic config validation
+if not OPENAI_API_KEY:
+    st.error("❌ OPENAI_API_KEY environment variable is not set.")
+    st.stop()
+
+if not ASSISTANT_ID:
+    st.error("❌ OPENAI_ASSISTANT_ID environment variable is not set.")
+    st.stop()
+
+if not SUPABASE_URL or not (SUPABASE_SERVICE_ROLE_KEY or SUPABASE_ANON_KEY):
+    st.error("❌ Supabase configuration missing. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (preferred) or SUPABASE_ANON_KEY.")
+    st.stop()
+
+# Cached Supabase client (server-side only)
+@st.cache_resource
+def supabase_client():
+    return get_supabase_client()
+
+# Session state bootstrapping
+if "auth_user" not in st.session_state:
+    st.session_state.auth_user: Optional[Dict[str, Any]] = None
+
+if "session_id" not in st.session_state:
+    st.session_state.session_id: Optional[str] = None
+
+if "messages" not in st.session_state:
+    st.session_state.messages: List[Dict[str, str]] = []
 
 # Define BBR colors
 BBR_BLUE = "#003876"
 BBR_LIGHT_BLUE = "#e8f0f9"
 BBR_GRAY = "#f8f9fa"
 BBR_TEXT = "#333333"
+
+# Invite-only auth and persistence helpers
+def bootstrap_user(email: str, token: str):
+    client = supabase_client()
+    invite = get_invite(client, token)
+    if not invite:
+        return None, "Invalid or expired invite token."
+
+    user = get_user_by_email(client, email)
+    if not user:
+        role = "admin" if count_admins(client) == 0 else "member"
+        user = create_user(client, email=email, role=role)
+    else:
+        touch_last_login(client, user_id=user["id"])
+
+    mark_invite_used(client, invite["id"], user["id"])
+    session = create_session(client, user["id"], client_info="streamlit")
+
+    st.session_state.auth_user = user
+    st.session_state.session_id = session["id"]
+
+    # preload history (likely empty) and add welcome if empty
+    history = fetch_messages(client, session["id"], limit=50)
+    if history:
+        st.session_state.messages = [{"role": m["role"], "content": m["content"]} for m in history]
+    else:
+        welcome = """Hello! I'm the BBR Service Assistant. I'm here to help you with information about BBR Network's technologies, applications, and services.
+
+Feel free to copy and paste this message for your inquiry related to ETAs. If you need further assistance or more specific information, please let me know!
+
+How can I assist you today?"""
+        st.session_state.messages = [{"role": "assistant", "content": welcome}]
+        save_message(client, session["id"], None, "assistant", welcome)
+
+    return user, None
+
+
+def persist_message(role: str, content: str):
+    client = supabase_client()
+    session_id = st.session_state.session_id
+    user_id = st.session_state.auth_user["id"] if st.session_state.auth_user else None
+    if not session_id:
+        return
+    try:
+        save_message(client, session_id, user_id if role == "user" else None, role, content)
+        touch_session(client, session_id)
+    except Exception:
+        st.warning("Message saved locally but failed to persist to Supabase.")
+
+
+def render_auth_gate():
+    st.markdown("### Invite-only access")
+    st.caption("Enter your email and invite code to continue.")
+    with st.form("auth_form"):
+        email = st.text_input("Work email")
+        token = st.text_input("Invite code / token")
+        submitted = st.form_submit_button("Enter", type="primary")
+    if submitted:
+        with st.spinner("Validating invite..."):
+            user, err = bootstrap_user(email.strip(), token.strip())
+        if err:
+            st.error(err)
+        else:
+            st.success(f"Welcome {user['email']}!")
+
+
+def render_admin_panel():
+    user = st.session_state.auth_user
+    if not user or user.get("role") != "admin":
+        return
+    client = supabase_client()
+    with st.expander("Admin: manage invites"):
+        col1, col2 = st.columns(2)
+        with col1:
+            email = st.text_input("Invite email (optional)", key="admin_invite_email")
+            days = st.number_input("Valid for days", min_value=1, max_value=90, value=7, key="admin_invite_days")
+            if st.button("Create invite", key="admin_invite_create", type="primary"):
+                with st.spinner("Creating invite..."):
+                    invite = create_invite(client, email or None, int(days), issued_by=user["id"])
+                st.success(f"Invite created. Token: {invite['token']}")
+        with col2:
+            invites = list_invites(client, limit=10)
+            st.write("Recent invites")
+            for inv in invites:
+                status = "used" if inv.get("used_at") else "open"
+                st.code(f"{inv['token']} ({status}) email={inv.get('email','-')}", language="text")
 
 # Function to load and encode image to base64
 def get_image_base64(image_path):
@@ -522,20 +654,18 @@ def query_openai_assistant(user_query):
     except Exception as e:
         return f"Error querying assistant: {str(e)}"
 
-# Initialize session state
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-    # Add initial welcome message
-    welcome_message = """Hello! I'm the BBR Service Assistant. I'm here to help you with information about BBR Network's technologies, applications, and services.
-
-Feel free to copy and paste this message for your inquiry related to ETAs. If you need further assistance or more specific information, please let me know!
-
-How can I assist you today?"""
-    
-    st.session_state.messages.append({
-        "role": "assistant", 
-        "content": welcome_message
-    })
+# Require authentication before showing chat
+if not st.session_state.auth_user:
+    st.markdown(f"""
+    <div class="page-header">
+        <div class="logo-container">
+            <img src="data:image/png;base64,{bbr_logo_base64}" alt="BBR Logo" style="height: 50px; margin-right: 15px;">
+            <div class="header-description">BBR Service Assistant</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    render_auth_gate()
+    st.stop()
 
 # Create fixed header
 st.markdown(f"""
@@ -546,6 +676,9 @@ st.markdown(f"""
     </div>
 </div>
 """, unsafe_allow_html=True)
+
+# Admin tools (invite management)
+render_admin_panel()
 
 # Display chat messages
 for message in st.session_state.messages:
@@ -560,6 +693,7 @@ for message in st.session_state.messages:
 if prompt := st.chat_input("Ask a question about BBR technologies..."):
     # Add user message to chat history
     st.session_state.messages.append({"role": "user", "content": prompt})
+    persist_message("user", prompt)
     
     # Display user message
     with st.chat_message("user", avatar=user_avatar):
@@ -573,6 +707,7 @@ if prompt := st.chat_input("Ask a question about BBR technologies..."):
     
     # Add assistant response to chat history
     st.session_state.messages.append({"role": "assistant", "content": response})
+    persist_message("assistant", response)
     
     # Auto-scroll to bottom using JavaScript
     st.markdown("""

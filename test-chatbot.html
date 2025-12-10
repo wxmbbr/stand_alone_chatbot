@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BBR Network - Chatbot Integration Test</title>
+    <style>
+        /* Basic page styling */
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            min-height: 100vh;
+        }
+
+        .header {
+            background-color: #003876;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+
+        .content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .instructions {
+            background: #e8f4fd;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #003876;
+        }
+
+        /* BBR Chatbot Widget Styles */
+        #chat-widget {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 400px;
+            height: 600px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,56,118,0.2);
+            display: none;
+            z-index: 9999;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #003876 0%, #004c9e 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+        }
+
+        .chat-header-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px 8px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .chat-close-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        #chat-frame {
+            width: 100%;
+            height: calc(100% - 50px);
+            border: none;
+            overflow: auto !important;
+            pointer-events: auto;
+        }
+
+        #chat-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #003876 0%, #004c9e 100%);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            box-shadow: 0 4px 20px rgba(0,56,118,0.3);
+            z-index: 9999;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #chat-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0,56,118,0.4);
+        }
+
+        .notification-badge {
+            background: #ff4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .chat-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+            color: #666;
+        }
+
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #003876;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            #chat-widget {
+                width: calc(100vw - 20px);
+                height: calc(100vh - 100px);
+                bottom: 10px;
+                right: 10px;
+                left: 10px;
+            }
+            
+            #chat-toggle {
+                bottom: 10px;
+                right: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏗️ BBR Network - Chatbot Integration Test</h1>
+        <p>Testing the chatbot widget integration</p>
+    </div>
+
+    <div class="content">
+        <h2>Welcome to BBR Network</h2>
+        <p>BBR empowers the creation of lasting bridges, buildings, and industrial facilities. We perfect new structures while conserving and upgrading existing ones through innovative engineering solutions and a sustainable lifecycle approach.</p>
+        
+        <h3>Our Services:</h3>
+        <ul>
+            <li>🌉 <strong>Bridges:</strong> Post-tensioning and stay cable solutions</li>
+            <li>🏢 <strong>Buildings:</strong> Innovative construction methods</li>
+            <li>⚡ <strong>Energy:</strong> Sustainable infrastructure solutions</li>
+            <li>🔧 <strong>Maintenance:</strong> MRR (Maintenance, Repair, Replacement)</li>
+        </ul>
+    </div>
+
+    <div class="instructions">
+        <h3>🧪 Chatbot Testing Instructions:</h3>
+        <ol>
+            <li><strong>Look for the blue button</strong> in the bottom-right corner that says "Ask BBR Expert"</li>
+            <li><strong>Click the button</strong> to open the chat widget</li>
+            <li><strong>Wait for the chatbot to load</strong> (you'll see a loading spinner)</li>
+            <li><strong>Test the functionality:</strong>
+                <ul>
+                    <li>Try asking questions about BBR services</li>
+                    <li>Test the close button (×)</li>
+                    <li>Try clicking outside the widget to close it</li>
+                    <li>Test on mobile by resizing your browser window</li>
+                </ul>
+            </li>
+        </ol>
+        <p><strong>Note:</strong> The chatbot connects to your Streamlit service at <code>https://chatbot-frame-for-homepage.onrender.com</code></p>
+    </div>
+
+    <div class="content">
+        <h3>📊 Test Results</h3>
+        <p>Use this page to verify that:</p>
+        <ul>
+            <li>✅ The chatbot button appears correctly</li>
+            <li>✅ The chat widget opens and closes properly</li>
+            <li>✅ The iframe loads your chatbot service</li>
+            <li>✅ The design matches BBR branding</li>
+            <li>✅ Mobile responsiveness works</li>
+        </ul>
+    </div>
+
+    <!-- BBR Chatbot Widget -->
+    <button id="chat-toggle">
+        Ask BBR Expert
+        <span class="notification-badge" id="notification-badge" style="display: none;">!</span>
+    </button>
+
+    <div id="chat-widget">
+        <div class="chat-header">
+            <div class="chat-header-title">
+                <span>🏗️</span>
+                <span>BBR Expert Assistant</span>
+            </div>
+            <button class="chat-close-btn" id="chat-close-btn">×</button>
+        </div>
+        <div class="chat-loading" id="chat-loading">
+            <div class="loading-spinner"></div>
+            <div>Loading chat...</div>
+        </div>
+        <iframe id="chat-frame" 
+                src="" 
+                frameborder="0" 
+                scrolling="yes"
+                allow="microphone; camera"
+                style="overflow: auto !important;">
+        </iframe>
+    </div>
+
+    <script>
+        // BBR Chatbot Integration Script
+        (function() {
+            // Detect environment and set appropriate iframe src
+            function getStreamlitUrl() {
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    return 'http://localhost:8501';
+                } else {
+                    return 'https://chatbot-frame-for-homepage.onrender.com';
+                }
+            }
+
+            // Wait for DOM to be ready
+            function initializeChatbot() {
+                const chatToggle = document.getElementById('chat-toggle');
+                const chatWidget = document.getElementById('chat-widget');
+                const chatCloseBtn = document.getElementById('chat-close-btn');
+                const chatFrame = document.getElementById('chat-frame');
+                const chatLoading = document.getElementById('chat-loading');
+
+                if (!chatToggle || !chatWidget || !chatCloseBtn || !chatFrame) {
+                    console.error('BBR Chatbot: Required elements not found');
+                    return;
+                }
+
+                console.log('BBR Chatbot: All elements found, initializing...');
+
+                // Set iframe source
+                chatFrame.src = getStreamlitUrl();
+                console.log('BBR Chatbot: Iframe src set to:', chatFrame.src);
+
+                // Handle iframe load
+                chatFrame.onload = function() {
+                    console.log('BBR Chatbot: Iframe loaded successfully');
+                    setTimeout(function() {
+                        chatLoading.style.display = 'none';
+                    }, 1000);
+                };
+
+                // Toggle chat widget
+                chatToggle.addEventListener('click', function() {
+                    console.log('BBR Chatbot: Toggle button clicked');
+                    if (chatWidget.style.display === 'none' || chatWidget.style.display === '') {
+                        chatWidget.style.display = 'block';
+                        chatToggle.style.display = 'none';
+                        
+                        // Hide notification badge when opened
+                        const badge = document.getElementById('notification-badge');
+                        if (badge) badge.style.display = 'none';
+                        
+                        console.log('BBR Chatbot: Widget opened');
+                    }
+                });
+
+                // Close chat widget
+                chatCloseBtn.addEventListener('click', function() {
+                    console.log('BBR Chatbot: Close button clicked');
+                    chatWidget.style.display = 'none';
+                    chatToggle.style.display = 'flex';
+                });
+
+                // Close on outside click
+                document.addEventListener('click', function(event) {
+                    if (!chatWidget.contains(event.target) && !chatToggle.contains(event.target)) {
+                        if (chatWidget.style.display === 'block') {
+                            console.log('BBR Chatbot: Clicked outside, closing widget');
+                            chatWidget.style.display = 'none';
+                            chatToggle.style.display = 'flex';
+                        }
+                    }
+                });
+
+                console.log('BBR Chatbot: Initialization complete');
+            }
+
+            // Initialize when DOM is ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initializeChatbot);
+            } else {
+                initializeChatbot();
+            }
+        })();
+    </script>
+</body>
+</html>
+

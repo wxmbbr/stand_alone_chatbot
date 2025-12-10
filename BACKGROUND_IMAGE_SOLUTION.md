@@ -146,3 +146,4 @@ function getStreamlitUrl() {
 3. **Inline Base64**: Embed all images directly in HTML (increases file size)
 
 The implemented solution provides the best balance of performance, reliability, and maintainability.
+

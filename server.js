@@ -17,6 +17,11 @@ app.get('/homepage', (req, res) => {
     res.sendFile(path.join(__dirname, 'homepage-working', 'Home _ BBR Network.html'));
 });
 
+// Handle the test chatbot route
+app.get('/test', (req, res) => {
+    res.sendFile(path.join(__dirname, 'test-chatbot.html'));
+});
+
 // Fallback for any other routes
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
