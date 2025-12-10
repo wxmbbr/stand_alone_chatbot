@@ -328,32 +328,49 @@ st.markdown(f"""
         margin-bottom: 6px;
     }}
 
-    /* Compact action buttons */
-    .compact-row {{
+    /* Compact toolbar similar to Gemini */
+    .toolbar {{
         display: flex;
-        gap: 10px;
-        margin-top: 6px;
-        margin-bottom: 6px;
+        align-items: center;
+        gap: 12px;
+        background: #1f1f1f;
+        color: #e5e5e5;
+        padding: 10px 14px;
+        border-radius: 24px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+        margin-top: 10px;
     }}
-    .compact-slot {{
+    .toolbar .slot {{
         position: relative;
-        width: 48px;
-        height: 48px;
-    }}
-    .compact-action {{
-        position: absolute;
-        inset: 0;
+        width: 40px;
+        height: 40px;
+        flex: 0 0 40px;
         border-radius: 12px;
-        background: var(--bbr-blue-dark);
-        color: #fff;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 20px;
-        box-shadow: 0 6px 16px rgba(0,0,0,0.18);
+        background: #2a2a2a;
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
         cursor: pointer;
     }}
-    .compact-uploader [data-testid="stFileUploaderDropzone"] {{
+    .toolbar .text {{
+        flex: 1;
+        color: #e5e5e5;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        padding-left: 4px;
+    }}
+    .toolbar .spacer {{
+        flex: 1;
+    }}
+    .toolbar .slot span {{
+        font-size: 20px;
+    }}
+    .toolbar .mic {{
+        background: #2a2a2a;
+    }}
+    /* hide uploader chrome */
+    .toolbar .uploader [data-testid="stFileUploaderDropzone"] {{
         position: absolute;
         inset: 0;
         opacity: 0;
@@ -362,16 +379,12 @@ st.markdown(f"""
         border: none !important;
         background: transparent !important;
     }}
-    .compact-uploader label {{
+    .toolbar .uploader label,
+    .toolbar .uploader [data-testid="stFileUploaderUploadButton"],
+    .toolbar .uploader [data-testid="stFileUploaderDropzone"] section {{
         display: none !important;
-    }}
-    .compact-uploader [data-testid="stFileUploaderUploadButton"] {{
-        display: none !important;
-    }}
-    .compact-uploader [data-testid="stFileUploaderDropzone"] section {{
         padding: 0 !important;
         margin: 0 !important;
-        display: none !important;
     }}
 
     /* Mobile tweaks */
@@ -630,9 +643,11 @@ def render_mobile_inputs():
 
 def render_quick_actions():
     st.markdown(
-        "<div class='compact-row'>"
-        "  <div class='compact-slot compact-uploader'>"
-        "    <div class='compact-action' title='Attach file'>+</div>",
+        "<div class='toolbar'>"
+        "  <div class='slot uploader' title='Attach file'>+</div>"
+        "  <div class='text'>Tools</div>"
+        "  <div class='spacer'></div>"
+        "  <div class='slot mic' title='Record voice'>🎤</div>",
         unsafe_allow_html=True,
     )
     uploaded = st.file_uploader(
@@ -640,12 +655,6 @@ def render_quick_actions():
         type=["pdf", "docx", "txt"],
         label_visibility="collapsed",
         key="inline_file",
-    )
-    st.markdown(
-        "  </div>"
-        "  <div class='compact-slot'>"
-        "    <div class='compact-action' title='Record voice'>🎤</div>",
-        unsafe_allow_html=True,
     )
     audio_bytes = audio_recorder(
         text="",
@@ -655,10 +664,9 @@ def render_quick_actions():
         icon_size="1.2rem",
     )
     st.markdown(
-        "  </div>"
         "</div>"
         "<style>"
-        "  .stChatFloatingInputContainer { padding-bottom: 60px !important; }"
+        "  .stChatFloatingInputContainer { padding-bottom: 70px !important; }"
         "</style>",
         unsafe_allow_html=True,
     )
