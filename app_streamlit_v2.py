@@ -442,18 +442,44 @@ st.markdown(f"""
     /* Mobile tweaks */
     @media (max-width: 768px) {{
         .page-header {{
-            margin: 12px auto 8px auto;
-            padding: 0 12px;
+            margin: 10px auto 6px auto;
+            padding: 0 10px;
+            height: 60px;
+            border-radius: 12px;
+        }}
+        .logo-container img {{
+            height: 38px;
+        }}
+        .header-description {{
+            font-size: 0.95rem;
         }}
         .block-container {{
-            padding: 0 12px 120px 12px !important;
+            padding: 0 10px 110px 10px !important;
         }}
         .stChatFlow {{
-            height: calc(100vh - 240px) !important;
-            padding: 14px !important;
+            height: calc(100vh - 230px) !important;
+            padding: 12px !important;
         }}
         .stChatMessage {{
             max-width: 100% !important;
+            margin: 0.9rem 0 !important;
+        }}
+        .stChatMessage.assistant [data-testid="stMarkdownContainer"],
+        .stChatMessage.user [data-testid="stMarkdownContainer"] {{
+            padding: 0.75rem 0.85rem !important;
+            font-size: 0.95rem !important;
+        }}
+        .stChatFloatingInputContainer {{
+            bottom: 12px !important;
+            padding: 8px !important;
+        }}
+        .stChatInputContainer input {{
+            padding: 0.75rem 0.85rem !important;
+            font-size: 0.95rem !important;
+        }}
+        .stChatInputContainer button {{
+            min-height: 40px !important;
+            font-size: 0.95rem !important;
         }}
     }}
 </style>
