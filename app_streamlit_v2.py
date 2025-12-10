@@ -582,6 +582,29 @@ def render_mobile_inputs():
                 st.write(f"• {t}")
 
 
+def render_quick_actions():
+    st.markdown("### ")
+    actions = st.columns([1, 1], gap="small")
+    with actions[0]:
+        st.caption("📎 Attach")
+        uploaded = st.file_uploader("Attach file", type=["pdf", "docx", "txt"], label_visibility="collapsed", key="inline_file")
+        if uploaded:
+            text = _extract_text(uploaded)
+            if text:
+                st.session_state.file_context = {"name": uploaded.name, "text": text[:12000]}
+                st.success(f"Loaded {uploaded.name} ({len(text)} chars)")
+    with actions[1]:
+        st.caption("🎤 Voice")
+        audio_bytes = audio_recorder(text="", pause_threshold=2.0, sample_rate=16000, key="inline_audio")
+        if audio_bytes:
+            with st.spinner("Transcribing..."):
+                transcript = _transcribe_audio(audio_bytes)
+            if transcript:
+                st.session_state.voice_history.append(transcript)
+                st.success("Voice captured. Sending...")
+                process_user_message(transcript)
+
+
 def process_user_message(prompt: str):
     if not prompt:
         return
@@ -633,9 +656,6 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-render_mobile_inputs()
-render_sidebar_inputs()
-
 # Display chat messages
 for message in st.session_state.messages:
     if message["role"] == "user":
@@ -652,3 +672,6 @@ elif len(st.session_state.messages) == 1:
     # Auto-start a conversation by posing a gentle opener
     auto_prompt = "Please briefly introduce yourself and how you can help with BBR products and specs."
     process_user_message(auto_prompt)
+
+# Inline quick actions (file attach, voice)
+render_quick_actions()
