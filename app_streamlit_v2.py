@@ -274,24 +274,30 @@ st.markdown(f"""
         transform: translateX(-50%) !important;
         position: fixed !important;
         z-index: 1001 !important;
-        background: rgba(255,255,255,0.94) !important;
-        border: 1px solid #dfe6f2 !important;
-        border-radius: 14px !important;
-        box-shadow: var(--shadow);
+        background: #f4f6fb !important;
+        border: 1px solid #dde3ef !important;
+        border-radius: 16px !important;
+        box-shadow: 0 12px 26px rgba(0,0,0,0.12);
         backdrop-filter: blur(10px);
-        padding: 10px !important;
+        padding: 12px !important;
     }}
     .stChatInputContainer input {{
-        border-radius: 12px !important;
-        border: 1px solid #cfd9ec !important;
-        padding: 0.9rem 1rem !important;
-        background: #f7f9fd !important;
+        border-radius: 14px !important;
+        border: 1px solid #d5dbe7 !important;
+        padding: 0.9rem 1.1rem !important;
+        background: #f7f8fb !important;
+        color: #4b5568 !important;
+        font-weight: 600;
+    }}
+    .stChatInputContainer input::placeholder {{
+        color: #8a92a3 !important;
     }}
     .stChatInputContainer button {{
-        border-radius: 12px !important;
-        background: var(--bbr-blue) !important;
-        color: #fff !important;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        border-radius: 14px !important;
+        background: #eef1f7 !important;
+        color: #6b7587 !important;
+        border: 1px solid #d5dbe7 !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }}
 
     /* Sidebar tweaks */
@@ -328,46 +334,45 @@ st.markdown(f"""
         margin-bottom: 6px;
     }}
 
-    /* Compact toolbar similar to Gemini */
+    /* Inline toolbar (light, aligned with input) */
     .toolbar {{
         display: flex;
         align-items: center;
-        gap: 12px;
-        background: #1f1f1f;
-        color: #e5e5e5;
-        padding: 10px 14px;
-        border-radius: 24px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-        margin-top: 10px;
+        gap: 10px;
+        background: #f4f6fb;
+        color: #4b5568;
+        padding: 8px 12px;
+        border-radius: 18px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        border: 1px solid #dde3ef;
+        margin-top: 8px;
     }}
     .toolbar .slot {{
         position: relative;
-        width: 40px;
-        height: 40px;
-        flex: 0 0 40px;
-        border-radius: 12px;
+        width: 36px;
+        height: 36px;
+        flex: 0 0 36px;
+        border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #2a2a2a;
-        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
+        background: #ffffff;
+        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
+        border: 1px solid #d5dbe7;
         cursor: pointer;
+        color: #4b5568;
     }}
     .toolbar .text {{
-        flex: 1;
-        color: #e5e5e5;
-        font-weight: 600;
-        letter-spacing: 0.01em;
-        padding-left: 4px;
+        display: none;
     }}
     .toolbar .spacer {{
         flex: 1;
     }}
     .toolbar .slot span {{
-        font-size: 20px;
+        font-size: 18px;
     }}
     .toolbar .mic {{
-        background: #2a2a2a;
+        background: #ffffff;
     }}
     /* hide uploader chrome */
     .toolbar .uploader [data-testid="stFileUploaderDropzone"] {{
@@ -644,10 +649,9 @@ def render_mobile_inputs():
 def render_quick_actions():
     st.markdown(
         "<div class='toolbar'>"
-        "  <div class='slot uploader' title='Attach file'>+</div>"
-        "  <div class='text'>Tools</div>"
+        "  <div class='slot mic' title='Record voice'>🎤</div>"
         "  <div class='spacer'></div>"
-        "  <div class='slot mic' title='Record voice'>🎤</div>",
+        "  <div class='slot uploader' title='Attach file'>☁️</div>",
         unsafe_allow_html=True,
     )
     uploaded = st.file_uploader(
