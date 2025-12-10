@@ -305,6 +305,29 @@ st.markdown(f"""
         color: #5a6880 !important;
     }}
 
+    /* Emphasis styling */
+    .stMarkdown strong,
+    .stMarkdown b {{
+        color: var(--bbr-blue);
+        font-weight: 800;
+    }}
+    .stMarkdown em,
+    .stMarkdown i {{
+        color: var(--bbr-blue);
+        font-style: normal;
+        font-weight: 700;
+    }}
+    .stMarkdown mark {{
+        background: #fff3c4;
+        padding: 0 4px;
+        border-radius: 4px;
+    }}
+    .stMarkdown ul li {{
+        border-left: 3px solid rgba(0,45,121,0.12);
+        padding-left: 10px;
+        margin-bottom: 6px;
+    }}
+
     /* Mobile tweaks */
     @media (max-width: 768px) {{
         .page-header {{
